@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="RousettusTool" >
+        <file>resources/rousettusTool.png</file>
+    </qresource>
+</RCC>
