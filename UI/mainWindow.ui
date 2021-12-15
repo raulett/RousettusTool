@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>783</width>
-    <height>719</height>
+    <width>913</width>
+    <height>712</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Regefe Tool v2</string>
+   <string>RousettusTool</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -61,6 +61,44 @@
       </property>
      </widget>
     </item>
+    <item>
+     <widget class="QTextEdit" name="logTextEdit">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>100</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="undoRedoEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -68,21 +106,27 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>783</width>
+     <width>913</width>
      <height>18</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>Данные</string>
+   <widget class="QMenu" name="data_processing_menu">
+    <property name="enabled">
+     <bool>false</bool>
     </property>
-    <widget class="QMenu" name="menu_4">
-     <property name="title">
-      <string>Импорт</string>
+    <property name="title">
+     <string>Data Processing</string>
+    </property>
+    <widget class="QMenu" name="menuMagnetic_Data">
+     <property name="enabled">
+      <bool>false</bool>
      </property>
-     <addaction name="action_CSV"/>
+     <property name="title">
+      <string>Magnetic Data</string>
+     </property>
+     <addaction name="actionVariation_calculate"/>
     </widget>
-    <addaction name="menu_4"/>
+    <addaction name="menuMagnetic_Data"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -99,7 +143,7 @@
     <addaction name="DBsettingsButton"/>
    </widget>
    <addaction name="menu_2"/>
-   <addaction name="menu"/>
+   <addaction name="data_processing_menu"/>
    <addaction name="menu_3"/>
   </widget>
   <action name="exitButton">
@@ -120,6 +164,14 @@
   <action name="OpenPrjButton">
    <property name="text">
     <string>Открыть проект</string>
+   </property>
+  </action>
+  <action name="actionVariation_calculate">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Variation calculate</string>
    </property>
   </action>
  </widget>
