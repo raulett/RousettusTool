@@ -47,10 +47,19 @@ class RousettusMain:
 
         """Enable tools flags"""
         self.enable_tools_flags = {
-            'data processing': (True, {
-                'magnetic data': (True, {
-                    'variation calculate': (True, None)
-                })
+            'data processing': (True,
+                {
+                    'gamma data': (True,
+                    {
+                        'import data': (True,
+                            {
+                                'CSV gamma': (True, None)
+                            })
+                    }),
+                    'magnetic data': (True,
+                    {
+                        'variation calculate': (True, None)
+                    })
             })
         }
 

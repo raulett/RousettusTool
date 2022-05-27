@@ -14,8 +14,8 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
 
         # add slots
         # pydevd.settrace('localhost', port=5566, stdoutToServer=True, stderrToServer=True, suspend=False)
-        self.actionVariation_calculate.triggered.connect(self.add_variation_calculate_tab)
-        self.tabWidget.tabCloseRequested.connect(self.closeTab)
+        #self.actionVariation_calculate.triggered.connect(self.add_variation_calculate_tab)
+        #self.tabWidget.tabCloseRequested.connect(self.closeTab)
 
     def enable_functions(self, menu_flags):
         if menu_flags['data processing'][0]:
