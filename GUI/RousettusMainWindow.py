@@ -3,7 +3,7 @@ import os
 import re
 
 import qgis.core
-from qgis.PyQt.QtWidgets import QMainWindow, QDialog
+from qgis.PyQt.QtWidgets import QMainWindow, QDialog, QWidget
 from qgis.core import *
 from qgis.core import QgsProject
 from qgis.core import QgsMessageLog
@@ -14,27 +14,35 @@ from ..GUI.FlightPlanning.ProfileGenerateHandle import ProfileGenerateHandle
 from ..tools.ServiceClasses.get_current_project_name import get_current_project_name
 from ..tools.ServiceClasses.LoggerQgis import LoggerQgis
 
-class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
+from PyQt5.QtCore import Qt
 
+class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
+    debug = 1
     def __init__(self, enable_flags_dict, parent=None):
         """Constructor."""
         super(RousettusMainWindow, self).__init__(parent)
         """Enable and disable functions"""
+        self.tab_exist_flags = {}
         self.setupUi(self)
+        self.profile_generate_tab = None
+        self.logger = LoggerQgis()
         self.enable_functions(enable_flags_dict)
         self.prj_name, self.current_project_path, self.prj_full_path = get_current_project_name()
         if (len(self.current_project_path.strip()) != 0):
             QgsMessageLog.logMessage("{}. {}".format('main', "project {} loaded".format(self.prj_name)),
                                      "Rousettus_Tool",
                                      level=Qgis.Info)
-        self.logger = LoggerQgis()
         self.initGui()
+
+        #Минимизация окна
+        # self.setWindowState(self.windowState() | Qt.WindowMinimized)
 
 
 
         #add events handler
         #TODO Борода не работает qgis.core.QgsProject.instance().readProject.connect(self.get_current_project_name)
         QgsProject.instance().readProject.connect(self.prj_changed)
+        self.tabWidget.tabCloseRequested.connect(lambda index: self.closeTab(index))
 
 
         # add slots
@@ -58,11 +66,24 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
         self.variation_calculate_tab = self.tabWidget.addTab(variation_calculate_widget, 'Variation Calculate')
 
     def add_profile_generate_tab(self):
-        profile_generate_wiget = ProfileGenerateHandle(self, logger=self.logger, main_window=self)
-        self.profile_generate_tab = self.tabWidget.addTab(profile_generate_wiget, 'Profile Generate')
+        if self.debug:
+            print ("called add_profile_function")
+            print("current tab_exist_flags['Profile Generate'] = {}".
+                  format(self.tab_exist_flags.get('Profile Generate', 0)))
+        if self.tab_exist_flags.get('Profile Generate', 0) == 0:
+            profile_generate_wiget = ProfileGenerateHandle(self, logger=self.logger, main_window=self)
+            self.tabWidget.addTab(profile_generate_wiget, 'Profile Generate')
+            self.tab_exist_flags['Profile Generate'] = 1
+        else:
+            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
 
     def closeTab(self, currentIndex):
+        if self.debug:
+            print("closing wiget is {}, profile generate type is {}".format(self.tabWidget.tabText(currentIndex), type(self.tabWidget.tabText(currentIndex))))
+        self.tab_exist_flags['{}'.format(self.tabWidget.tabText(currentIndex))] = 0
         self.tabWidget.removeTab(currentIndex)
+        if self.debug:
+            print("close_tab func, after delete = {}".format(self.tab_exist_flags))
 
     def initGui(self):
         self.label_prj_name.setText(self.prj_name)
@@ -80,6 +101,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
             QgsMessageLog.logMessage("{}. {}".format('main', "project {} loaded".format(self.prj_name)),
                                      "Rousettus_Tool",
                                      level=Qgis.Info)
+
 
 
 

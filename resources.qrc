@@ -2,4 +2,7 @@
     <qresource prefix="/plugins/RousettusTool" >
         <file>resources/rousettaIcon.png</file>
     </qresource>
+    <qresource prefix="/plugins/RousettusTool" >
+        <file>resources/warning.png</file>
+    </qresource>
 </RCC>
