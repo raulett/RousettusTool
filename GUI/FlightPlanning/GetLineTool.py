@@ -1,3 +1,5 @@
+import math
+
 from PyQt5.QtCore import pyqtSignal, QPoint, Qt
 from qgis.gui import QgsMapTool, QgsRubberBand, QgsMapCanvasSnappingUtils
 from qgis.core import QgsSnappingUtils, QgsPointLocator
@@ -69,7 +71,13 @@ class GetLineTool(QgsMapTool):
                 self.r_band.addPoint(line_points[0])
                 self.r_band.addPoint(line_points[1])
                 self.r_band.show()
+                if self.debug:
+                    print("GetLineTool, line_points type: {}".format(type(line_points[0])))
                 azimuth = line_points[0].azimuth(line_points[1])
+                # tg = (line_points[0].y() - line_points[1].y())/(line_points[0].x() - line_points[1].x())
+                # if self.debug:
+                #     print("GetLineTool, tg = {}".format(tg))
+                # azimuth = (180/math.pi)*math.atan(tg)
                 if self.debug:
                     print(azimuth)
                 self.line_found_signl.emit([azimuth])
@@ -83,7 +91,7 @@ class GetLineTool(QgsMapTool):
 
     def deactivate(self):
         self.canvas.setCursor(QCursor())
-        # self.r_band.reset()
+        self.r_band.reset()
         self.decline_signal.emit()
 
     def isZoomTool(self):

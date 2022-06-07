@@ -396,8 +396,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="maximum">
+          <number>999999</number>
+         </property>
          <property name="value">
-          <number>99</number>
+          <number>100</number>
          </property>
         </widget>
        </item>
@@ -459,7 +462,7 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QSpinBox" name="spinBox">
+        <widget class="QSpinBox" name="profile_distance_spinBox">
          <property name="maximum">
           <number>10000</number>
          </property>

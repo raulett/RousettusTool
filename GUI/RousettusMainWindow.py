@@ -11,6 +11,7 @@ from qgis.core import QgsMessageLog
 from ..UI.mainWindow_ui import Ui_MainWindow
 from ..GUI.DataProcessing.VariationCalculateHandle import VariationCalculateHandle
 from ..GUI.FlightPlanning.ProfileGenerateHandle import ProfileGenerateHandle
+from ..GUI.FlightPlanning.FlighfPlanningHandle import FlightPlanningHandle
 from ..tools.ServiceClasses.get_current_project_name import get_current_project_name
 from ..tools.ServiceClasses.LoggerQgis import LoggerQgis
 
@@ -50,6 +51,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
         #self.actionVariation_calculate.triggered.connect(self.add_variation_calculate_tab)
         #self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.actionMake_Profiles.triggered.connect(self.add_profile_generate_tab)
+        self.actionPlan_Flights.triggered.connect(self.add_flaght_planning_tab)
 
 
     def enable_functions(self, menu_flags):
@@ -64,6 +66,14 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
     def add_variation_calculate_tab(self):
         variation_calculate_widget = VariationCalculateHandle(self, self.progressBar)
         self.variation_calculate_tab = self.tabWidget.addTab(variation_calculate_widget, 'Variation Calculate')
+
+    def add_flaght_planning_tab(self):
+        if self.tab_exist_flags.get('Flight planning', 0) == 0:
+            flight_planning_wiget = FlightPlanningHandle(self, logger=self.logger, main_window=self)
+            self.tabWidget.addTab(flight_planning_wiget, 'Flight Planning')
+            self.tab_exist_flags['Flight Planning'] = 1
+        else:
+            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Flight Planning'))
 
     def add_profile_generate_tab(self):
         if self.debug:
