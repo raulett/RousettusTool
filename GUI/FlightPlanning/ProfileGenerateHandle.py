@@ -27,8 +27,9 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog):
         self.canvas = None
         self.current_tool = None
         self.profile_fields = QgsFields()
-        self.profile_fields.append(QgsField('profile_num', QVariant.Int))
+        self.profile_fields.append(QgsField('prof_num', QVariant.Int))
         self.profile_fields.append(QgsField('azimuth', QVariant.Double))
+        self.profile_fields.append(QgsField('pr_dist', QVariant.Int))
 
         #init fields
         self.profiles_save_path = os.path.join(self.main_window.current_project_path,
@@ -212,8 +213,9 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog):
         output_feat = QgsFeature()
         output_feat.setGeometry(line)
         output_feat.setFields(self.profile_fields)
-        output_feat.setAttribute('profile_num', profile_num)
+        output_feat.setAttribute('prof_num', profile_num)
         output_feat.setAttribute('azimuth', azimuth)
+        output_feat.setAttribute('pr_dist', self.profile_distance_spinBox.value())
         return output_feat
 
 
