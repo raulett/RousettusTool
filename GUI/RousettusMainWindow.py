@@ -18,7 +18,7 @@ from ..tools.ServiceClasses.LoggerQgis import LoggerQgis
 from PyQt5.QtCore import Qt
 
 class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
-    debug = 1
+    debug = 0
     def __init__(self, enable_flags_dict, parent=None):
         """Constructor."""
         super(RousettusMainWindow, self).__init__(parent)

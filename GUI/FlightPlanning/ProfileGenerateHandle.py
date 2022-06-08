@@ -7,7 +7,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QVariant
 
 from qgis.core import Qgis, QgsMapLayerProxyModel, QgsVectorLayer, QgsFeature, QgsProject, QgsPointXY, \
-    QgsGeometry, QgsPoint, QgsLineString, QgsField, QgsFields
+    QgsGeometry, QgsPoint, QgsLineString, QgsField, QgsFields, QgsCoordinateReferenceSystem
 from qgis.gui import QgisInterface
 from qgis.utils import iface
 import os, statistics
@@ -16,7 +16,7 @@ import os, statistics
 
 
 class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog):
-    debug = 1
+    debug = 0
     def __init__(self, progressBar=None, logger=None, main_window=None, parent=None):
         super(ProfileGenerateHandle, self).__init__(parent)
         self.module_tag = 'Profile generate handler'
@@ -95,9 +95,13 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog):
 
     # Set or unset warning icon when layer is not metric
     def set_icon(self):
+        try:
+            crs = self.mMapLayerComboBox.currentLayer().crs()
+        except:
+            crs = QgsCoordinateReferenceSystem()
         if self.debug:
             print('set icon call')
-        if not (r'units=m' in self.mMapLayerComboBox.currentLayer().crs().toProj()):
+        if not (r'units=m' in crs.toProj()):
             self.label_layer_icon.setPixmap(QPixmap(":/plugins/RousettusTool/resources/warning.png"))
             self.label_layer_icon.setToolTip('Layer has non metric CRS')
         else:

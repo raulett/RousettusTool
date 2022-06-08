@@ -8,7 +8,7 @@ from PyQt5.QtGui import QCursor, QPixmap, QColor
 
 # QgsMapTool is abstract. Need you to override methods
 class GetLineTool(QgsMapTool):
-    debug = 1
+    debug = 0
 
     line_found_signl = pyqtSignal(object)
     decline_signal = pyqtSignal()

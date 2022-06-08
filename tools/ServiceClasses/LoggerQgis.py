@@ -12,7 +12,7 @@ from qgis.core import Qgis
 # Qgis.Success - Used for reporting a successful operation.
 # Qgis.NoLevel - No level.
 class LoggerQgis:
-    debug = 1
+    debug = 0
     def __init__(self):
         self.error_levels = ['INFO', 'WARNING', 'CRITICAL', 'SUCCESS', 'NOLEVEL']
         self.prj_name, self.current_project_path, self.prj_full_path = get_current_project_name()

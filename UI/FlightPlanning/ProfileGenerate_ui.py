@@ -243,6 +243,7 @@ class Ui_ProfileGenerateWiget(object):
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem1)
         self.pushButton_3 = QtWidgets.QPushButton(self.frame)
+        self.pushButton_3.setEnabled(False)
         self.pushButton_3.setObjectName("pushButton_3")
         self.horizontalLayout_5.addWidget(self.pushButton_3)
         self.pushButton_add_profiles = QtWidgets.QPushButton(self.frame)

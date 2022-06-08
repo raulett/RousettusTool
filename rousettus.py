@@ -179,9 +179,11 @@ class RousettusMain:
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-            self.mainWindow = RousettusMainWindow(self.enable_tools_flags)
+        # if self.first_start == True:
+        #     self.first_start = False
+        #     self.mainWindow = RousettusMainWindow(self.enable_tools_flags)
+
+        self.mainWindow = RousettusMainWindow(self.enable_tools_flags)
 
         # show the dialog
         self.mainWindow.show()

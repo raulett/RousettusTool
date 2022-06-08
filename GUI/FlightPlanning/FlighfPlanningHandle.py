@@ -16,7 +16,7 @@ import os, math
 
 
 class FlightPlanningHandle(Ui_FlightPlan_form, QDialog):
-    debug = 1
+    debug = 0
     def __init__(self, progressBar=None, logger=None, main_window=None, parent=None):
         super(FlightPlanningHandle, self).__init__(parent)
         self.setupUi(self)
@@ -69,9 +69,21 @@ class FlightPlanningHandle(Ui_FlightPlan_form, QDialog):
         self.update_warning_block()
 
     def update_warning_block(self):
-        takeoff_points_crs = self.takeoff_point_layer_ComboBox.currentLayer().crs().authid()
-        profiles_crs = self.profiles_mMapLayerComboBox.currentLayer().crs().authid()
-        DEM_crs = self.DEM_mMapLayerComboBox.currentLayer().crs().authid()
+        takeoff_points_crs = None
+        profiles_crs = None
+        DEM_crs = None
+        try:
+            takeoff_points_crs = self.takeoff_point_layer_ComboBox.currentLayer().crs().authid()
+        except:
+            pass
+        try:
+            profiles_crs = self.profiles_mMapLayerComboBox.currentLayer().crs().authid()
+        except:
+            pass
+        try:
+            DEM_crs = self.DEM_mMapLayerComboBox.currentLayer().crs().authid()
+        except:
+            pass
         if (takeoff_points_crs == None) or (profiles_crs == None) or (DEM_crs == None):
             return
         if not (takeoff_points_crs == profiles_crs == DEM_crs):
