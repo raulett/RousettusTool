@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>646</width>
-    <height>706</height>
+    <width>674</width>
+    <height>639</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -36,6 +36,23 @@
        <layout class="QGridLayout" name="gridLayout">
         <item row="1" column="2">
          <widget class="QLineEdit" name="lineEdit_alt">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
           <property name="inputMask">
            <string/>
           </property>
@@ -43,6 +60,23 @@
         </item>
         <item row="1" column="0">
          <widget class="QLineEdit" name="lineEdit_lon">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
           <property name="inputMask">
            <string/>
           </property>
@@ -70,6 +104,23 @@
         </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="lineEdit_lat">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
           <property name="inputMask">
            <string/>
           </property>
@@ -113,19 +164,42 @@
           <property name="minimumSize">
            <size>
             <width>200</width>
-            <height>0</height>
+            <height>22</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>200</width>
-            <height>16777215</height>
+            <height>20</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QgsFeaturePickerWidget" name="takeoff_point_ComboBox"/>
+         <widget class="QgsFeaturePickerWidget" name="takeoff_point_ComboBox">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_get_to_point">
@@ -156,6 +230,17 @@
      </item>
      <item>
       <widget class="QLineEdit" name="lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>tpN</string>
        </property>
@@ -167,6 +252,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QGroupBox" name="groupBox_2">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>80</height>
+        </size>
+       </property>
        <property name="title">
         <string>Survey profiles</string>
        </property>
@@ -178,7 +269,13 @@
             <property name="minimumSize">
              <size>
               <width>90</width>
-              <height>0</height>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
              </size>
             </property>
             <property name="text">
@@ -191,8 +288,19 @@
             <property name="minimumSize">
              <size>
               <width>200</width>
-              <height>0</height>
+              <height>22</height>
              </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
             </property>
            </widget>
           </item>
@@ -212,8 +320,19 @@
           <property name="minimumSize">
            <size>
             <width>200</width>
-            <height>0</height>
+            <height>22</height>
            </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
           </property>
          </widget>
         </item>
@@ -254,7 +373,7 @@
        <property name="minimumSize">
         <size>
          <width>200</width>
-         <height>0</height>
+         <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
@@ -272,17 +391,28 @@
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_3">
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="title">
       <string>Planning parameters</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="survey_dist_spinBox">
+      <item row="0" column="3">
+       <widget class="QSpinBox" name="flight_alt_spinBox">
         <property name="minimumSize">
          <size>
           <width>80</width>
-          <height>0</height>
+          <height>22</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
         </property>
         <property name="suffix">
          <string> m</string>
@@ -291,28 +421,7 @@
          <number>999999</number>
         </property>
         <property name="value">
-         <number>5000</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_14">
-        <property name="text">
-         <string>Flight altitude</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QSpinBox" name="flights_mult_spinBox">
-        <property name="value">
-         <number>1</number>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Flights multiplicity</string>
+         <number>90</number>
         </property>
        </widget>
       </item>
@@ -320,9 +429,14 @@
        <widget class="QSpinBox" name="waypoint_dist_spinBox">
         <property name="minimumSize">
          <size>
-          <width>50</width>
-          <height>0</height>
+          <width>80</width>
+          <height>22</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
         </property>
         <property name="suffix">
          <string> m</string>
@@ -335,11 +449,37 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_14">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Flight altitude</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Waypoint distance, m</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_5">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>200</width>
           <height>0</height>
          </size>
         </property>
@@ -354,20 +494,18 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Waypoint distance, m</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="flight_alt_spinBox">
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="survey_dist_spinBox">
         <property name="minimumSize">
          <size>
-          <width>50</width>
-          <height>0</height>
+          <width>80</width>
+          <height>22</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
         </property>
         <property name="suffix">
          <string> m</string>
@@ -376,11 +514,45 @@
          <number>999999</number>
         </property>
         <property name="value">
-         <number>90</number>
+         <number>5000</number>
         </property>
        </widget>
       </item>
       <item row="1" column="2">
+       <widget class="QLabel" name="label_6">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Flights multiplicity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QSpinBox" name="flights_mult_spinBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -473,7 +645,11 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
-       <widget class="QgsMapLayerComboBox" name="mMapLayerComboBox_Flights"/>
+       <widget class="QgsMapLayerComboBox" name="mMapLayerComboBox_Flights">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -505,6 +681,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButton_export">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="text">
         <string>Export selected layer as flights</string>
        </property>

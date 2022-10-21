@@ -45,7 +45,7 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog):
 
     def initGui(self):
         try:
-            self.lineEdit_projectName.setText(str(self.profiles_save_path))
+            self.lineEdit_projectName.setText(str(self.main_window.profiles_save_path))
         except Exception as e:
             self.logger.log_msg("no project name from main window. {}".format(e), self.module_tag, Qgis.Warning)
         self.set_icon()

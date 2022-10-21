@@ -14,10 +14,11 @@ from ..GUI.FlightPlanning.ProfileGenerateHandle import ProfileGenerateHandle
 from ..GUI.FlightPlanning.FlighfPlanningHandle import FlightPlanningHandle
 from ..tools.ServiceClasses.get_current_project_name import get_current_project_name
 from ..tools.ServiceClasses.LoggerQgis import LoggerQgis
+from ..GUI.Help.AboutHandle import AboutHandle
 
 from PyQt5.QtCore import Qt
 
-class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
+class RousettusMainWindow(QMainWindow, Ui_MainWindow):
     debug = 0
     def __init__(self, enable_flags_dict, parent=None):
         """Constructor."""
@@ -26,13 +27,19 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
         self.tab_exist_flags = {}
         self.setupUi(self)
         self.profile_generate_tab = None
+        # todo debug logger
+        # self.logger = None
         self.logger = LoggerQgis()
+
         self.enable_functions(enable_flags_dict)
-        self.prj_name, self.current_project_path, self.prj_full_path = get_current_project_name()
-        if (len(self.current_project_path.strip()) != 0):
-            QgsMessageLog.logMessage("{}. {}".format('main', "project {} loaded".format(self.prj_name)),
-                                     "Rousettus_Tool",
-                                     level=Qgis.Info)
+        # todo debug project name
+
+
+        # self.prj_name, self.current_project_path, self.prj_full_path = '', '', ''
+        # if (self.current_project_path != '') and (len(self.current_project_path.strip()) != 0):
+        #     QgsMessageLog.logMessage("{}. {}".format('main', "project {} loaded".format(self.prj_name)),
+        #                              "Rousettus_Tool",
+        #                              level=Qgis.Info)
         self.initGui()
 
         #Минимизация окна
@@ -52,6 +59,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
         #self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.actionMake_Profiles.triggered.connect(self.add_profile_generate_tab)
         self.actionPlan_Flights.triggered.connect(self.add_flaght_planning_tab)
+        self.actionAbout_Rousettus.triggered.connect(self.show_about)
 
 
     def enable_functions(self, menu_flags):
@@ -61,6 +69,11 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
                 self.menuMagnetic_Data.setEnabled(True)
                 if menu_flags['data processing'][1]['magnetic data'][1]['variation calculate'][0]:
                     self.actionVariation_calculate.setEnabled(True)
+
+    def show_about(self):
+        about_dialog = AboutHandle(self)
+        about_dialog.show()
+
 
     # Add tabs functions
     def add_variation_calculate_tab(self):
@@ -72,6 +85,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
             flight_planning_wiget = FlightPlanningHandle(self, logger=self.logger, main_window=self)
             self.tabWidget.addTab(flight_planning_wiget, 'Flight Planning')
             self.tab_exist_flags['Flight Planning'] = 1
+            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Flight Planning'))
         else:
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Flight Planning'))
 
@@ -84,6 +98,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
             profile_generate_wiget = ProfileGenerateHandle(self, logger=self.logger, main_window=self)
             self.tabWidget.addTab(profile_generate_wiget, 'Profile Generate')
             self.tab_exist_flags['Profile Generate'] = 1
+            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
         else:
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
 
@@ -96,16 +111,23 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, QDialog):
             print("close_tab func, after delete = {}".format(self.tab_exist_flags))
 
     def initGui(self):
+        print('Main window init gui')
+        print('main window before get current path')
+        self.prj_name, self.current_project_path, self.prj_full_path = get_current_project_name()
+        print('main window prj name {}, current path {}, prj_full_path {}'.format(self.prj_name,
+                                                                                  self.current_project_path,
+                                                                                  self.prj_full_path))
         self.label_prj_name.setText(self.prj_name)
+        self.label_prj_name.setToolTip(self.prj_name)
         self.label_prj_path.setText(self.current_project_path)
+        self.label_prj_path.setToolTip(self.current_project_path)
 
     #slot for project changed signal
     def prj_changed(self):
-        self.prj_name, self.current_project_path, self.prj_full_path = get_current_project_name()
         self.initGui()
         tab_widget_count = self.tabWidget.count()
         for i in range(tab_widget_count):
-            self.tabWidget.widget(i).self.initGui()
+            self.tabWidget.widget(i).initGui()
 
         if (len(self.current_project_path.strip()) != 0):
             QgsMessageLog.logMessage("{}. {}".format('main', "project {} loaded".format(self.prj_name)),

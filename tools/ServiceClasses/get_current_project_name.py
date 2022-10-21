@@ -1,4 +1,4 @@
-from qgis.core import *
+from qgis.core import QgsProject
 import re
 import os
 
@@ -9,7 +9,8 @@ def get_current_project_name():
     prj_full_path = ''
     prj_name = ''
 
-    prj_full_path = QgsProject.instance().fileName().replace('/', '\\')
+    if QgsProject.instance().fileName() != '':
+        prj_full_path = QgsProject.instance().fileName().replace('/', '\\')
     if re.match('geopackage', prj_full_path) != None:
         re.findall('projectName=(\w+)', prj_full_path)
         try:
@@ -19,7 +20,8 @@ def get_current_project_name():
             pass
     else:
         prj_name = os.path.basename(QgsProject.instance().fileName()).split('.')[0]
-    current_project_path = QgsProject.instance().readPath("./").replace('/', '\\')
+    if QgsProject.instance().readPath("./") != './':
+        current_project_path = QgsProject.instance().readPath("./").replace('/', '\\')
 
 
 
