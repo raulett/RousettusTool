@@ -47,7 +47,6 @@ class GetLineTool(QgsMapTool):
 
     # event is QgsMapMouseEvent
     def canvasReleaseEvent(self, event):
-        pass
         if event.button()==Qt.RightButton:
             self.deactivate()
             return
