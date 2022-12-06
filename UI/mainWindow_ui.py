@@ -51,7 +51,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_prj_name.sizePolicy().hasHeightForWidth())
         self.label_prj_name.setSizePolicy(sizePolicy)
-        self.label_prj_name.setMinimumSize(QtCore.QSize(300, 0))
+        self.label_prj_name.setMinimumSize(QtCore.QSize(0, 0))
         self.label_prj_name.setMaximumSize(QtCore.QSize(300, 16777215))
         self.label_prj_name.setText("")
         self.label_prj_name.setScaledContents(True)

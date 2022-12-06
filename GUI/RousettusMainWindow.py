@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import configparser
 
 import qgis.core
 from qgis.PyQt.QtWidgets import QMainWindow, QDialog, QWidget
@@ -15,10 +16,10 @@ from ..GUI.FlightPlanning.FlighfPlanningHandle import FlightPlanningHandle
 from ..tools.ServiceClasses.get_current_project_name import get_current_project_name
 from ..tools.ServiceClasses.LoggerQgis import LoggerQgis
 from ..GUI.Help.AboutHandle import AboutHandle
-
+from ..tools.Configurable import Configurable
 from PyQt5.QtCore import Qt
 
-class RousettusMainWindow(QMainWindow, Ui_MainWindow):
+class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
     debug = 0
     def __init__(self, enable_flags_dict, parent=None):
         """Constructor."""
@@ -33,6 +34,13 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
 
         self.enable_functions(enable_flags_dict)
         # todo debug project name
+
+        # инициализация конфига
+        plugin_path = r"\\".join(os.path.dirname(os.path.realpath(__file__)).split(os.sep)[:-1])
+        self.rousettus_config_file = os.path.join(plugin_path, 'config.ini')
+        self.rousettus_config = configparser.ConfigParser()
+        self.load_config()
+
 
 
         # self.prj_name, self.current_project_path, self.prj_full_path = '', '', ''
@@ -61,6 +69,8 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
         self.actionPlan_Flights.triggered.connect(self.add_flaght_planning_tab)
         self.actionAbout_Rousettus.triggered.connect(self.show_about)
 
+        # Add config events
+        # self.closeEvent.connect(self.store_config)
 
     def enable_functions(self, menu_flags):
         if menu_flags['data processing'][0]:
@@ -95,10 +105,18 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
             print("current tab_exist_flags['Profile Generate'] = {}".
                   format(self.tab_exist_flags.get('Profile Generate', 0)))
         if self.tab_exist_flags.get('Profile Generate', 0) == 0:
-            profile_generate_wiget = ProfileGenerateHandle(self, logger=self.logger, main_window=self)
+            print('tabs in config: ', 'TABS' in self.rousettus_config)
+            if 'TABS' not in self.rousettus_config:
+                print('TABS not in config')
+                self.rousettus_config['TABS'] = {}
+            profile_generate_wiget = ProfileGenerateHandle(self, logger=self.logger,
+                                                           main_window=self,
+                                                           config=self.rousettus_config)
             self.tabWidget.addTab(profile_generate_wiget, 'Profile Generate')
             self.tab_exist_flags['Profile Generate'] = 1
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
+            if isinstance(self.tabWidget.currentWidget(), Configurable) and (self.tabWidget.currentWidget().section_name is not None):
+                self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(True)
         else:
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
 
@@ -106,6 +124,10 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
         if self.debug:
             print("closing wiget is {}, profile generate type is {}".format(self.tabWidget.tabText(currentIndex), type(self.tabWidget.tabText(currentIndex))))
         self.tab_exist_flags['{}'.format(self.tabWidget.tabText(currentIndex))] = 0
+        if isinstance(self.tabWidget.currentWidget(), Configurable):
+            self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(False)
+            self.tabWidget.widget(currentIndex).store_config()
+        self.tabWidget.widget(currentIndex).close()
         self.tabWidget.removeTab(currentIndex)
         if self.debug:
             print("close_tab func, after delete = {}".format(self.tab_exist_flags))
@@ -119,6 +141,9 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
                                                                                   self.prj_full_path))
         self.label_prj_name.setText(self.prj_name)
         self.label_prj_name.setToolTip(self.prj_name)
+        width = self.label_prj_name.fontMetrics().boundingRect(self.label_prj_name.text()).width()
+        self.label_prj_name.setFixedWidth(width+5)
+
         self.label_prj_path.setText(self.current_project_path)
         self.label_prj_path.setToolTip(self.current_project_path)
 
@@ -133,6 +158,34 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
             QgsMessageLog.logMessage("{}. {}".format('main', "project {} loaded".format(self.prj_name)),
                                      "Rousettus_Tool",
                                      level=Qgis.Info)
+
+    #Config store and load
+    # load config function
+    def load_config(self):
+        if False:
+            print('in load_config func')
+        self.rousettus_config.read(self.rousettus_config_file)
+        print(self.rousettus_config)
+        if False and 'TABS' in self.rousettus_config:
+            print('try to get TABS, profile_generate: ', self.rousettus_config['TABS'].getboolean("profile_generate", fallback = False))
+        if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("profile_generate", fallback = False):
+            self.add_profile_generate_tab()
+
+
+    # store config
+    def store_config(self):
+        for tab_index in range(self.tabWidget.count()):
+            self.tabWidget.widget(tab_index).store_config()
+        with open(self.rousettus_config_file, 'w') as configfile:
+            self.rousettus_config.write(configfile)
+        if self.debug:
+            print('config sections: ', self.rousettus_config.sections())
+
+
+    def closeEvent(self, *args, **kwargs):
+        print('close call')
+        self.store_config()
+
 
 
 

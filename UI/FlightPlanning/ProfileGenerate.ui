@@ -436,37 +436,6 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_azimuth">
-         <property name="minimumSize">
-          <size>
-           <width>120</width>
-           <height>22</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>80</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>could get by line</string>
-         </property>
-         <property name="minimum">
-          <double>-180.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>180.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="stepType">
-          <enum>QAbstractSpinBox::DefaultStepType</enum>
-         </property>
-        </widget>
-       </item>
        <item row="4" column="0">
         <widget class="QLabel" name="label_9">
          <property name="text">
@@ -484,6 +453,28 @@
          </property>
          <property name="maximum">
           <number>10000</number>
+         </property>
+         <property name="value">
+          <number>100</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="spinBox_azimuth">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>22</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="maximum">
+          <number>999999</number>
          </property>
          <property name="value">
           <number>100</number>
@@ -625,11 +616,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>QgsDoubleSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
-   <header>qgsdoublespinbox.h</header>
-  </customwidget>
   <customwidget>
    <class>QgsFeaturePickerWidget</class>
    <extends>QWidget</extends>

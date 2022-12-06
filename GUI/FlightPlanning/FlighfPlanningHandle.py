@@ -13,6 +13,8 @@ from PyQt5.QtCore import QLocale, QVariant
 
 import os, math
 
+from ...tools.Configurable import Configurable
+
 
 
 class FlightPlanningHandle(Ui_FlightPlan_form, QDialog):
