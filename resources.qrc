@@ -5,4 +5,7 @@
     <qresource prefix="/plugins/RousettusTool" >
         <file>resources/warning.png</file>
     </qresource>
+    <resources>
+        <include location="plugins/RousettusTool/libs/LinearSplineInterpolation"/>
+    </resources>
 </RCC>

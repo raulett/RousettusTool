@@ -13,6 +13,7 @@ from ..UI.mainWindow_ui import Ui_MainWindow
 from ..GUI.DataProcessing.VariationCalculateHandle import VariationCalculateHandle
 from ..GUI.FlightPlanning.ProfileGenerateHandle import ProfileGenerateHandle
 from ..GUI.FlightPlanning.FlighfPlanningHandle import FlightPlanningHandle
+from ..GUI.FlightPlanning.FlightPlanningTestHandle import FlightPlanningTestHandle
 from ..tools.ServiceClasses.get_current_project_name import get_current_project_name
 from ..tools.ServiceClasses.LoggerQgis import LoggerQgis
 from ..GUI.Help.AboutHandle import AboutHandle
@@ -68,6 +69,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
         self.actionMake_Profiles.triggered.connect(self.add_profile_generate_tab)
         self.actionPlan_Flights.triggered.connect(self.add_flaght_planning_tab)
         self.actionAbout_Rousettus.triggered.connect(self.show_about)
+        self.actionplan_test.triggered.connect(self.add_test_flight_generate_tab)
 
         # Add config events
         # self.closeEvent.connect(self.store_config)
@@ -89,6 +91,21 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
     def add_variation_calculate_tab(self):
         variation_calculate_widget = VariationCalculateHandle(self, self.progressBar)
         self.variation_calculate_tab = self.tabWidget.addTab(variation_calculate_widget, 'Variation Calculate')
+
+    # DEBUG
+    def add_test_flight_generate_tab(self):
+        if self.tab_exist_flags.get('Test Flight Plan', 0) == 0:
+            flight_planning_wiget = FlightPlanningTestHandle(main_window=self).set_config(self.rousettus_config)
+            self.tabWidget.addTab(flight_planning_wiget, 'Test Flight Plan')
+            self.tab_exist_flags['Test Flight Plan'] = 1
+            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Test Flight Plan'))
+            if 'TABS' not in self.rousettus_config:
+                print('TABS not in config')
+                self.rousettus_config['TABS'] = {}
+            if isinstance(self.tabWidget.currentWidget(), Configurable) and (self.tabWidget.currentWidget().section_name is not None):
+                self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(True)
+        else:
+            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Test Flight Plan'))
 
     def add_flaght_planning_tab(self):
         if self.tab_exist_flags.get('Flight planning', 0) == 0:
@@ -170,6 +187,8 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             print('try to get TABS, profile_generate: ', self.rousettus_config['TABS'].getboolean("profile_generate", fallback = False))
         if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("profile_generate", fallback = False):
             self.add_profile_generate_tab()
+        if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("test_flight_plan", fallback = False):
+            self.add_test_flight_generate_tab()
 
 
     # store config

@@ -21,6 +21,7 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
     debug = 0
     def __init__(self, progressBar=None, logger=None, main_window=None, parent=None, config=None):
         super(ProfileGenerateHandle, self).__init__(parent)
+        super(Configurable, self).__init__()
         self.module_tag = 'Profile generate handler'
         self.setupUi(self)
         self.progressBar = progressBar
@@ -40,7 +41,7 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         self.mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
 
         # init
-        self.config = config
+        self.set_config(config)
         self.section_name = 'profile_generate'
 
         # connect signals
