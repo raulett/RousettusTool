@@ -124,6 +124,18 @@
      </item>
      <item>
       <widget class="QGroupBox" name="groupBox_4">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>60</height>
+        </size>
+       </property>
        <property name="title">
         <string>DEM layer</string>
        </property>
@@ -210,6 +222,13 @@
       <string>Planning parameters</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>up deviation</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_14">
         <property name="minimumSize">
@@ -293,6 +312,39 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>down deviation</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="up_deviation_spinbox">
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>5.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QDoubleSpinBox" name="down_deviation_spinbox">
+        <property name="minimum">
+         <double>-1000.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>-2.000000000000000</double>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -383,6 +435,20 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="show_graph_btn">
+       <property name="text">
+        <string>show_graph</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="add_point_btn">
+       <property name="text">
+        <string>add_point</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButton_generate_flight">
        <property name="enabled">
         <bool>true</bool>
@@ -398,7 +464,7 @@
         <bool>true</bool>
        </property>
        <property name="text">
-        <string>Export selected layer as flights</string>
+        <string>Export as flight</string>
        </property>
       </widget>
      </item>

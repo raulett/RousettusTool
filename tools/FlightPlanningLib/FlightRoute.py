@@ -18,7 +18,7 @@ class FlightRoute:
     def __init__(self, multiline, crs):
         self.alt_points = None
         self.input_multiline = []
-
+        self.crs_str = crs
         # init external functions
         self.get_distance_function = qgs_get_distance
         self.input_multiline.append((multiline[0][0], multiline[0][1], 0))
@@ -28,23 +28,20 @@ class FlightRoute:
                                          self.input_multiline[i - 1][2] +
                                          self.get_distance_function(multiline[i - 1], multiline[i], crs)))
 
-        if 1:
-            print('flight route input multiline: ', self.input_multiline)
+        # if 1:
+        #     print('flight route input multiline: ', self.input_multiline)
 
-        self.multiline = None
         self.multiline_lenght = None
         self.distance_x_splines = None
         self.distance_y_splines = None
         self.dist_altitude_points = None
         self.dist_alt_splines = None
 
-    def get_turning_points(self):
-        return self.input_multiline
 
     def make_dist_to_x_func(self):
         self.distance_x_splines = SplinesArray()
         dist_x_table = [(point[2], point[0]) for point in self.input_multiline]
-        print('dist x table: ', dist_x_table)
+        # print('dist x table: ', dist_x_table)
         self.distance_x_splines.add_spline(dist_x_table)
         return self
 
@@ -67,7 +64,7 @@ class FlightRoute:
         data_provider = raster_layer.dataProvider()
         for i in range(1, len(self.input_multiline)):
             curr_distance = self.input_multiline[i - 1][2]
-            print('current distance: ', curr_distance)
+            # print('current distance: ', curr_distance)
             point = QgsPointXY(self.input_multiline[i - 1][0], self.input_multiline[i - 1][1])
             alt_value, is_exist = data_provider.sample(point, band)
             if is_exist:
@@ -102,3 +99,9 @@ class FlightRoute:
 
     def get_altitude_points_list(self):
         return self.alt_points
+
+    def get_turning_points(self):
+        return self.input_multiline
+
+    def get_crs_str(self):
+        return self.crs_str

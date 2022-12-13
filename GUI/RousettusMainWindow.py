@@ -100,7 +100,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             self.tab_exist_flags['Test Flight Plan'] = 1
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Test Flight Plan'))
             if 'TABS' not in self.rousettus_config:
-                print('TABS not in config')
+                # print('TABS not in config')
                 self.rousettus_config['TABS'] = {}
             if isinstance(self.tabWidget.currentWidget(), Configurable) and (self.tabWidget.currentWidget().section_name is not None):
                 self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(True)
@@ -117,14 +117,14 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Flight Planning'))
 
     def add_profile_generate_tab(self):
-        if self.debug:
-            print ("called add_profile_function")
-            print("current tab_exist_flags['Profile Generate'] = {}".
-                  format(self.tab_exist_flags.get('Profile Generate', 0)))
+        # if self.debug:
+        #     print ("called add_profile_function")
+        #     print("current tab_exist_flags['Profile Generate'] = {}".
+            #       format(self.tab_exist_flags.get('Profile Generate', 0)))
         if self.tab_exist_flags.get('Profile Generate', 0) == 0:
-            print('tabs in config: ', 'TABS' in self.rousettus_config)
+            # print('tabs in config: ', 'TABS' in self.rousettus_config)
             if 'TABS' not in self.rousettus_config:
-                print('TABS not in config')
+                # print('TABS not in config')
                 self.rousettus_config['TABS'] = {}
             profile_generate_wiget = ProfileGenerateHandle(self, logger=self.logger,
                                                            main_window=self,
@@ -138,24 +138,24 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
 
     def closeTab(self, currentIndex):
-        if self.debug:
-            print("closing wiget is {}, profile generate type is {}".format(self.tabWidget.tabText(currentIndex), type(self.tabWidget.tabText(currentIndex))))
+        # if self.debug:
+        #     print("closing wiget is {}, profile generate type is {}".format(self.tabWidget.tabText(currentIndex), type(self.tabWidget.tabText(currentIndex))))
         self.tab_exist_flags['{}'.format(self.tabWidget.tabText(currentIndex))] = 0
         if isinstance(self.tabWidget.currentWidget(), Configurable):
             self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(False)
             self.tabWidget.widget(currentIndex).store_config()
         self.tabWidget.widget(currentIndex).close()
         self.tabWidget.removeTab(currentIndex)
-        if self.debug:
-            print("close_tab func, after delete = {}".format(self.tab_exist_flags))
+        # if self.debug:
+        #     print("close_tab func, after delete = {}".format(self.tab_exist_flags))
 
     def initGui(self):
-        print('Main window init gui')
-        print('main window before get current path')
+        # print('Main window init gui')
+        # print('main window before get current path')
         self.prj_name, self.current_project_path, self.prj_full_path = get_current_project_name()
-        print('main window prj name {}, current path {}, prj_full_path {}'.format(self.prj_name,
-                                                                                  self.current_project_path,
-                                                                                  self.prj_full_path))
+        # print('main window prj name {}, current path {}, prj_full_path {}'.format(self.prj_name,
+        #                                                                           self.current_project_path,
+        #                                                                           self.prj_full_path))
         self.label_prj_name.setText(self.prj_name)
         self.label_prj_name.setToolTip(self.prj_name)
         width = self.label_prj_name.fontMetrics().boundingRect(self.label_prj_name.text()).width()
@@ -179,12 +179,12 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
     #Config store and load
     # load config function
     def load_config(self):
-        if False:
-            print('in load_config func')
+        # if False:
+        #     print('in load_config func')
         self.rousettus_config.read(self.rousettus_config_file)
-        print(self.rousettus_config)
-        if False and 'TABS' in self.rousettus_config:
-            print('try to get TABS, profile_generate: ', self.rousettus_config['TABS'].getboolean("profile_generate", fallback = False))
+        # print(self.rousettus_config)
+        # if False and 'TABS' in self.rousettus_config:
+        #     print('try to get TABS, profile_generate: ', self.rousettus_config['TABS'].getboolean("profile_generate", fallback = False))
         if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("profile_generate", fallback = False):
             self.add_profile_generate_tab()
         if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("test_flight_plan", fallback = False):
@@ -197,12 +197,12 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             self.tabWidget.widget(tab_index).store_config()
         with open(self.rousettus_config_file, 'w') as configfile:
             self.rousettus_config.write(configfile)
-        if self.debug:
-            print('config sections: ', self.rousettus_config.sections())
+        # if self.debug:
+        #     print('config sections: ', self.rousettus_config.sections())
 
 
     def closeEvent(self, *args, **kwargs):
-        print('close call')
+        # print('close call')
         self.store_config()
 
 
