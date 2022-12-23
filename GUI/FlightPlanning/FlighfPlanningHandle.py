@@ -20,7 +20,7 @@ from ...tools.Configurable import Configurable
 class FlightPlanningHandle(Ui_FlightPlan_form, QDialog):
     debug = 0
     def __init__(self, progressBar=None, logger=None, main_window=None, parent=None):
-        super(FlightPlanningHandle, self).__init__(parent)
+        super(FlightPlanningHandle, self).__init__()
         self.setupUi(self)
         self.module_tag = 'Fligh planning handler'
         self.main_window = main_window

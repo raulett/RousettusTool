@@ -18,9 +18,10 @@ from ...tools.Configurable import Configurable
 
 
 class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
-    debug = 0
+    debug = 1
     def __init__(self, progressBar=None, logger=None, main_window=None, parent=None, config=None):
         super(ProfileGenerateHandle, self).__init__(parent)
+        super(Configurable, self).__init__()
         self.module_tag = 'Profile generate handler'
         self.setupUi(self)
         self.progressBar = progressBar
@@ -36,21 +37,21 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         #init fields
         # self.profiles_save_path = os.path.join(self.main_window.current_project_path,
         #                                       "flights", 'flight_planning.gpkg')
-        self.update_polygon_features_combobox()
-        self.mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
 
         # init
-        self.config = config
+        self.set_config(config)
         self.section_name = 'profile_generate'
 
         # connect signals
-        self.mMapLayerComboBox.layerChanged.connect(self.mMapLayerComboBox_update_layer_handler)
         self.pushButton_get_azimuth.clicked.connect(self.pushButton_get_azimuth_handler)
         self.pushButton_add_profiles.clicked.connect(self.add_profiles_button_handler)
+        self.mMapLayerComboBox.layerChanged.connect(self.mFeaturePickerWidget.setLayer)
         self.initGui()
+        self.update_polygon_features_combobox()
         self.load_config()
 
     def initGui(self):
+        self.mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
         try:
             self.lineEdit_projectName.setText(str(self.main_window.profiles_save_path))
         except Exception as e:
