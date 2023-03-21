@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>628</width>
-    <height>500</height>
+    <width>928</width>
+    <height>678</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">font-size:15pt</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -23,6 +26,11 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+        </font>
        </property>
        <property name="text">
         <string>Save path</string>
@@ -52,6 +60,11 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
      <property name="title">
       <string>Border Poly</string>
      </property>
@@ -68,7 +81,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>160</width>
+            <width>180</width>
             <height>0</height>
            </size>
           </property>
@@ -77,6 +90,11 @@
             <width>160</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
           </property>
           <property name="text">
            <string>Choose input polygon</string>
@@ -148,7 +166,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>170</width>
+            <width>260</width>
             <height>0</height>
            </size>
           </property>
@@ -157,6 +175,11 @@
             <width>170</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
           </property>
           <property name="text">
            <string>Save poly with new metric CRS</string>
@@ -183,7 +206,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>100</width>
+            <width>150</width>
             <height>0</height>
            </size>
           </property>
@@ -192,6 +215,11 @@
             <width>100</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
           </property>
           <property name="text">
            <string>Poly name</string>
@@ -251,9 +279,14 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>0</width>
-       <height>210</height>
+       <width>910</width>
+       <height>340</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
      </property>
      <property name="title">
       <string>Profile generation parameters</string>
@@ -266,8 +299,8 @@
        <rect>
         <x>11</x>
         <y>20</y>
-        <width>477</width>
-        <height>196</height>
+        <width>872</width>
+        <height>309</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout">
@@ -297,6 +330,11 @@
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Minimum profile lenght, m</string>
          </property>
@@ -304,6 +342,11 @@
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_8">
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>First profile number</string>
          </property>
@@ -317,6 +360,11 @@
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Profiles Azimuth, degree</string>
          </property>
@@ -324,6 +372,11 @@
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_7">
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Overlap beyond polygon borders, m</string>
          </property>
@@ -333,6 +386,11 @@
         <widget class="QCheckBox" name="checkBox_overwrite">
          <property name="enabled">
           <bool>false</bool>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Overwrite profiles, if exists</string>
@@ -438,6 +496,11 @@
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="label_9">
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Profile distance, m</string>
          </property>
@@ -460,24 +523,15 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QSpinBox" name="spinBox_azimuth">
-         <property name="minimumSize">
-          <size>
-           <width>120</width>
-           <height>22</height>
-          </size>
+        <widget class="QDoubleSpinBox" name="spinBox_azimuth">
+         <property name="decimals">
+          <number>4</number>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>80</width>
-           <height>16777215</height>
-          </size>
+         <property name="minimum">
+          <double>-91.000000000000000</double>
          </property>
          <property name="maximum">
-          <number>999999</number>
-         </property>
-         <property name="value">
-          <number>100</number>
+          <double>91.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -496,8 +550,13 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>50</height>
+       <height>100</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+      </font>
      </property>
      <property name="title">
       <string>Output</string>
@@ -586,6 +645,11 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>Plan flight</string>
           </property>
@@ -593,6 +657,11 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_add_profiles">
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>Generate profiles</string>
           </property>
@@ -602,6 +671,11 @@
          <widget class="QPushButton" name="pushButton">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
           </property>
           <property name="text">
            <string>Preview</string>

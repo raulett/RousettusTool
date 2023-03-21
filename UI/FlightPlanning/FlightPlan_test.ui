@@ -222,6 +222,20 @@
       <string>Planning parameters</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="3">
+       <widget class="QComboBox" name="comboBox_function">
+        <item>
+         <property name="text">
+          <string>adaptive_func</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>regular_func</string>
+         </property>
+        </item>
+       </widget>
+      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -239,40 +253,6 @@
         </property>
         <property name="text">
          <string>Flight altitude</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Flights multiplicity</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="flights_mult_spinBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>80</width>
-          <height>22</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
-        <property name="value">
-         <number>1</number>
         </property>
        </widget>
       </item>
@@ -300,18 +280,18 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+      <item row="3" column="1">
+       <widget class="QDoubleSpinBox" name="down_deviation_spinbox">
+        <property name="minimum">
+         <double>-1000.000000000000000</double>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
+        <property name="maximum">
+         <double>0.000000000000000</double>
         </property>
-       </spacer>
+        <property name="value">
+         <double>-2.000000000000000</double>
+        </property>
+       </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_2">
@@ -333,16 +313,67 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QDoubleSpinBox" name="down_deviation_spinbox">
-        <property name="minimum">
-         <double>-1000.000000000000000</double>
+      <item row="2" column="3">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Reg points dist</string>
         </property>
-        <property name="maximum">
-         <double>0.000000000000000</double>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="flights_mult_spinBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
         </property>
         <property name="value">
-         <double>-2.000000000000000</double>
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Flights multiplicity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QSpinBox" name="spinBox">
+        <property name="maximum">
+         <number>99999</number>
+        </property>
+        <property name="value">
+         <number>60</number>
         </property>
        </widget>
       </item>
@@ -442,9 +473,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="add_point_btn">
+      <widget class="QPushButton" name="init_flight">
        <property name="text">
-        <string>add_point</string>
+        <string>init flight</string>
        </property>
       </widget>
      </item>

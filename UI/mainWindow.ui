@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>688</height>
+    <width>1280</width>
+    <height>1016</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,6 +24,9 @@
   </property>
   <property name="windowTitle">
    <string>RousettusTool</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">font-size:15pt</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -59,6 +62,11 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Project name:</string>
          </property>
@@ -84,6 +92,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -101,6 +114,11 @@
        </item>
        <item>
         <widget class="QLabel" name="label_prj_path">
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
           <string/>
          </property>
@@ -122,6 +140,11 @@
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
       </property>
       <property name="layoutDirection">
        <enum>Qt::LeftToRight</enum>
@@ -151,6 +174,11 @@
     </item>
     <item>
      <widget class="QProgressBar" name="progressBar">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="value">
        <number>0</number>
       </property>
@@ -163,8 +191,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>22</height>
+     <width>1280</width>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="data_processing_menu">
@@ -257,7 +285,7 @@
   </action>
   <action name="actionPlan_Flights">
    <property name="text">
-    <string>Plan Flights</string>
+    <string>Plan Routes</string>
    </property>
   </action>
   <action name="actionAbout_Rousettus">
@@ -272,7 +300,7 @@
   </action>
   <action name="actionplan_test">
    <property name="text">
-    <string>plan_test</string>
+    <string>Plan Flights</string>
    </property>
   </action>
  </widget>

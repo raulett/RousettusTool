@@ -235,7 +235,7 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
     def load_config(self):
         if self.section_name in self.config:
             if 'azimuth' in self.config[self.section_name]:
-                self.spinBox_azimuth.setValue(self.config[self.section_name].getint('azimuth'))
+                self.spinBox_azimuth.setValue(self.config[self.section_name].getfloat('azimuth'))
             if 'min_profile_len' in self.config[self.section_name]:
                 self.spinBox_profile_len.setValue(self.config[self.section_name].getint('min_profile_len'))
             if 'borders_overlap' in self.config[self.section_name]:

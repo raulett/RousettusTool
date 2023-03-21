@@ -39,11 +39,10 @@ class FlightPlanningTestHandle(Ui_FlightPlan_test_form, QDialog, Configurable):
         self.pushButton_generate_flight.clicked.connect(self.generate_flight_btn_pushed)
         self.profiles_mMapLayerComboBox.layerChanged.connect(self.update_route_features_combobox)
         self.show_graph_btn.clicked.connect(self.show_flight_graph)
+        self.init_flight.clicked.connect(self.init_flight_btn_pushed)
         self.pushButton_export.clicked.connect(self.export_flight_plan)
 
-    def generate_flight_btn_pushed(self):
-        # print('test flight plan btn pushed')
-        # Init FlightRoute
+    def init_flight_btn_pushed(self):
         flight_poins_list = [(point.x(), point.y())
                              for point in self.mFeatureListComboBox.feature().geometry().asMultiPolyline()[0]]
         self.flight_plan = FlightPlan(flight_poins_list,
@@ -61,16 +60,26 @@ class FlightPlanningTestHandle(Ui_FlightPlan_test_form, QDialog, Configurable):
         self.flight_plan.set_alt_deviation(self.up_deviation_spinbox.value(), self.down_deviation_spinbox.value())
         self.flight_plan.set_flight_altitude(self.flight_alt_spinBox.value())
         self.flight_plan.make_initial_flight_plan()
+
+    def generate_flight_btn_pushed(self):
+        # print('test flight plan btn pushed')
+        # Init FlightRoute
+
         # print('init flight points: ', ((i, point['distance'], point['gnd_alt']) for i, point in enumerate(self.flight_plan.get_flight_points())))
         # print('init flight points len: ', len(self.flight_plan.get_flight_points()))
         start_time = time.time()
-        self.flight_plan.make_flight_plan()
+        print('Currebt combobox_func_ index', self.comboBox_function.currentIndex())
+        if self.comboBox_function.currentIndex() == 0:
+            self.flight_plan.make_flight_plan()
+        else:
+            self.flight_plan.make_regular_flight_plan(self.spinBox.value())
         print('make_flight_plan execution time: ', time.time()-start_time)
         # print('flight points: ', self.flight_plan.get_flight_points())
         # print('flight points len: ', len(self.flight_plan.get_flight_points()))
 
     def show_flight_graph(self):
         dist_alt_table = self.flight_plan.get_altitude_points_list()
+        print('flight_metrics: ', self.flight_plan.get_flight_metrics())
         flight_plan = self.flight_plan.get_flight_points()
         fig, ax = plt.subplots()
         ax.plot([point[0] for point in dist_alt_table], [point[1] for point in dist_alt_table])

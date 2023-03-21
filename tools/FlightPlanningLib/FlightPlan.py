@@ -1,7 +1,7 @@
 from .FlightRoute import FlightRoute
 from .geometry_functions.generate_linear_by_two_points import generate_linear_by_two_points
 # import pydevd_pycharm
-import time
+import time, math
 
 ''' Usage protocol:
 - init FlightRoute object.
@@ -81,6 +81,60 @@ class FlightPlan(FlightRoute):
                                     is_corner_point_flag=1)
                 self.flight_points.append(flight_point)
         return self
+
+    def make_regular_flight_plan(self, point_distance):
+        new_flight_plan = []
+        current_distance = 0
+        prev_point = None
+        for i, flight_point in enumerate(self.flight_points):
+            if i == 0:
+                new_flight_point = dict(distance = current_distance,
+                                    gnd_alt=self.get_altitude(current_distance),
+                                    is_service_flag=0,
+                                    k_alt_coef=0,
+                                    b_alt_coef=0,
+                                    flight_alt=self.flight_alt_agl,
+                                    prepared_flag=1,
+                                    is_corner_point_flag=1)
+                new_flight_plan.append(new_flight_point)
+                current_distance += point_distance
+                prev_point = new_flight_point
+            else:
+                while current_distance <= flight_point['distance'] - point_distance:
+                    flight_g_alt = self.get_altitude(current_distance)
+                    k_alt_coef, b_alt_coef = generate_linear_by_two_points((prev_point['distance'],
+                                                                            self.get_altitude(
+                                                                                prev_point['distance'])),
+                                                                           (current_distance, flight_g_alt))
+                    new_flight_point = dict(distance = current_distance,
+                                    gnd_alt=self.get_altitude(current_distance),
+                                    is_service_flag= flight_point['is_service_flag'],
+                                    k_alt_coef=k_alt_coef,
+                                    b_alt_coef=b_alt_coef,
+                                    flight_alt=self.flight_alt_agl,
+                                    prepared_flag=1,
+                                    is_corner_point_flag=1)
+                    prev_point = new_flight_point
+                    new_flight_plan.append(new_flight_point)
+                    current_distance += point_distance
+                current_distance = flight_point['distance']
+                flight_g_alt = self.get_altitude(current_distance)
+                k_alt_coef, b_alt_coef = generate_linear_by_two_points((prev_point['distance'],
+                                                                        self.get_altitude(
+                                                                            prev_point['distance'])),
+                                                                       (current_distance, flight_g_alt))
+                new_flight_point = dict(distance=current_distance,
+                                    gnd_alt=flight_g_alt,
+                                    is_service_flag=flight_point['is_service_flag'],
+                                    k_alt_coef=k_alt_coef,
+                                    b_alt_coef=b_alt_coef,
+                                    flight_alt=self.flight_alt_agl,
+                                    prepared_flag=1,
+                                    is_corner_point_flag=1)
+                prev_point = new_flight_point
+                new_flight_plan.append(new_flight_point)
+                current_distance += point_distance
+        self.flight_points = new_flight_plan
 
     def make_flight_plan(self):
         # print('call make flight plan')
@@ -181,3 +235,56 @@ class FlightPlan(FlightRoute):
 
     def get_flight_points(self):
         return self.flight_points
+
+    """
+        returns metrics of flight plan: 
+        points count,
+        total lenght
+        total climb
+        total desc
+        average standart_deviation  
+    """
+    def get_flight_metrics(self):
+        result = {}
+        standart_dev_list = []
+        points_count = len(self.flight_points)
+        current_fp = 1
+        tot_lenght = self.alt_points[len(self.alt_points)-1][0]
+        tot_climb = 0
+        tot_desc = 0
+        prev_alt = None
+        max_delta = 0
+        min_delta = 0
+        for alt_point in self.alt_points:
+            # print(alt_point)
+            if alt_point[0] > self.flight_points[current_fp]['distance']:
+                current_fp += 1
+            else:
+                if self.flight_points[current_fp]['is_service_flag'] == 0:
+                    continue
+                delta = (self.flight_points[current_fp]['k_alt_coef']*alt_point[0]+
+                         self.flight_points[current_fp]['b_alt_coef'])-alt_point[1]
+                if delta > max_delta:
+                    max_delta = delta
+                if delta < min_delta:
+                    min_delta = delta
+                std_dev_in_point = math.sqrt(((self.flight_points[current_fp]['k_alt_coef']*alt_point[0]+
+                                              self.flight_points[current_fp]['b_alt_coef'])-alt_point[1])**2)
+                standart_dev_list.append(std_dev_in_point)
+        result['max_delta'] = max_delta
+        result['min_delta'] = min_delta
+        result['average_SD'] = sum(standart_dev_list)/len(standart_dev_list)
+        result['points_count'] = points_count
+        result['tot_lenght'] = tot_lenght
+        for i, flight_point in enumerate(self.flight_points):
+            if i == 0:
+                prev_alt = flight_point['gnd_alt']
+            alt_delta = flight_point['gnd_alt'] - prev_alt
+            if alt_delta > 0:
+                tot_climb += alt_delta
+            elif alt_delta < 0:
+                tot_desc += alt_delta
+            prev_alt = flight_point['gnd_alt']
+        result['tot_climb'] = tot_climb
+        result['tot_desc'] = tot_desc
+        return result
