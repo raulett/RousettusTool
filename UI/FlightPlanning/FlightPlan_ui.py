@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\raule\YandexDisk\Work\ProjectsRepositories\20210416_Rousettus\RousettusTool\UI\FlightPlanning\FlightPlan.ui'
+# Form implementation generated from reading ui file 'F:\YandexDisk\Work\ProjectsRepositories\20210416_Rousettus\RousettusTool\UI\FlightPlanning\FlightPlan.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #

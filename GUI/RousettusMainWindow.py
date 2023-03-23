@@ -14,6 +14,7 @@ from ..GUI.DataProcessing.VariationCalculateHandle import VariationCalculateHand
 from ..GUI.FlightPlanning.ProfileGenerateHandle import ProfileGenerateHandle
 from ..GUI.FlightPlanning.FlighfPlanningHandle import FlightPlanningHandle
 from ..GUI.FlightPlanning.FlightPlanningTestHandle import FlightPlanningTestHandle
+from ..GUI.FlightPlanning.RoutePlanHandle import RoutePlanHandle
 from ..tools.ServiceClasses.get_current_project_name import get_current_project_name
 from ..tools.ServiceClasses.LoggerQgis import LoggerQgis
 from ..GUI.Help.AboutHandle import AboutHandle
@@ -25,6 +26,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
     def __init__(self, enable_flags_dict, parent=None):
         """Constructor."""
         super(RousettusMainWindow, self).__init__(parent)
+        self.current_project_path = None
         """Enable and disable functions"""
         self.tab_exist_flags = {}
         self.setupUi(self)
@@ -67,7 +69,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
         #self.actionVariation_calculate.triggered.connect(self.add_variation_calculate_tab)
         #self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.actionMake_Profiles.triggered.connect(self.add_profile_generate_tab)
-        self.actionPlan_Flights.triggered.connect(self.add_flaght_planning_tab)
+        self.actionPlan_routes.triggered.connect(self.add_route_plan_tab)
         self.actionAbout_Rousettus.triggered.connect(self.show_about)
         self.actionplan_test.triggered.connect(self.add_test_flight_generate_tab)
 
@@ -92,7 +94,23 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
         variation_calculate_widget = VariationCalculateHandle(self, self.progressBar)
         self.variation_calculate_tab = self.tabWidget.addTab(variation_calculate_widget, 'Variation Calculate')
 
-    # DEBUG
+    # TODO add route plan tab
+    def add_route_plan_tab(self):
+        if self.tab_exist_flags.get('Route plan handler', 0) == 0:
+            route_plan_wiget = RoutePlanHandle(main_window=self).set_config(self.rousettus_config)
+            self.tabWidget.addTab(route_plan_wiget, 'Route Plan')
+            self.tab_exist_flags['Route plan handler'] = 1
+            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Route Plan'))
+            if 'TABS' not in self.rousettus_config:
+                # print('TABS not in config')
+                self.rousettus_config['TABS'] = {}
+            if isinstance(self.tabWidget.currentWidget(), Configurable) and \
+                    (self.tabWidget.currentWidget().section_name is not None):
+                self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(True)
+        else:
+            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Route Plan'))
+
+
     def add_test_flight_generate_tab(self):
         if self.tab_exist_flags.get('Test Flight Plan', 0) == 0:
             flight_planning_wiget = FlightPlanningTestHandle(main_window=self).set_config(self.rousettus_config)
@@ -102,7 +120,8 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             if 'TABS' not in self.rousettus_config:
                 # print('TABS not in config')
                 self.rousettus_config['TABS'] = {}
-            if isinstance(self.tabWidget.currentWidget(), Configurable) and (self.tabWidget.currentWidget().section_name is not None):
+            if isinstance(self.tabWidget.currentWidget(), Configurable) and \
+                    (self.tabWidget.currentWidget().section_name is not None):
                 self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(True)
         else:
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Test Flight Plan'))
@@ -132,7 +151,8 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             self.tabWidget.addTab(profile_generate_wiget, 'Profile Generate')
             self.tab_exist_flags['Profile Generate'] = 1
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
-            if isinstance(self.tabWidget.currentWidget(), Configurable) and (self.tabWidget.currentWidget().section_name is not None):
+            if isinstance(self.tabWidget.currentWidget(), Configurable) and \
+                    (self.tabWidget.currentWidget().section_name is not None):
                 self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(True)
         else:
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))

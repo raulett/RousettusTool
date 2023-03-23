@@ -10,7 +10,7 @@ def get_current_project_name():
     prj_name = ''
 
     if QgsProject.instance().fileName() != '':
-        prj_full_path = QgsProject.instance().fileName().replace('/', '\\')
+        prj_full_path = QgsProject.instance().fileName().replace('/', os.sep)
     if re.match('geopackage', prj_full_path) != None:
         re.findall('projectName=(\w+)', prj_full_path)
         try:

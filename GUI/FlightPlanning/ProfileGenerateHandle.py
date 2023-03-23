@@ -5,6 +5,7 @@ from ...tools.DataProcessing.GeometryHandling.AffineTransform import AffilneTran
 
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QVariant, Qt
+from PyQt5.QtWidgets import QMessageBox
 
 from qgis.core import Qgis, QgsMapLayerProxyModel, QgsVectorLayer, QgsFeature, QgsProject, QgsPointXY, \
     QgsGeometry, QgsPoint, QgsLineString, QgsField, QgsFields, QgsCoordinateReferenceSystem
@@ -12,13 +13,14 @@ from qgis.gui import QgisInterface
 from qgis.utils import iface
 import os, statistics
 
+from ...tools.DataModels import RousettusPaths
 from ...tools.Configurable import Configurable
-
-
+from ...tools.DataProcessing.NodesFilesHandling import init_layer_file
 
 
 class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
     debug = 1
+
     def __init__(self, progressBar=None, logger=None, main_window=None, parent=None, config=None):
         super(ProfileGenerateHandle, self).__init__(parent)
         super(Configurable, self).__init__()
@@ -34,16 +36,11 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         self.profile_fields.append(QgsField('azimuth', QVariant.Double))
         self.profile_fields.append(QgsField('pr_dist', QVariant.Int))
 
-        #init fields
-        # self.profiles_save_path = os.path.join(self.main_window.current_project_path,
-        #                                       "flights", 'flight_planning.gpkg')
-
-        # init
         self.set_config(config)
         self.section_name = 'profile_generate'
 
         # connect signals
-        self.pushButton_get_azimuth.clicked.connect(self.pushButton_get_azimuth_handler)
+        self.pushButton_get_azimuth.clicked.connect(self.push_button_get_azimuth_handler)
         self.pushButton_add_profiles.clicked.connect(self.add_profiles_button_handler)
         self.mMapLayerComboBox.layerChanged.connect(self.mFeaturePickerWidget.setLayer)
         self.initGui()
@@ -61,7 +58,7 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
     def update_polygon_features_combobox(self):
         self.mFeaturePickerWidget.setLayer(self.mMapLayerComboBox.currentLayer())
 
-    def pushButton_get_azimuth_handler(self):
+    def push_button_get_azimuth_handler(self):
         self.main_window.showMinimized()
         self.select_line()
 
@@ -71,19 +68,26 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
 
         current_layer = self.canvas.currentLayer()
 
-        if (current_layer.type() == 0) and (current_layer.geometryType()>=1):
-            current_layer = self.canvas.currentLayer()
+        if current_layer is not None:
+            if (current_layer.type() == 0) and (current_layer.geometryType() >= 1):
+                current_layer = self.canvas.currentLayer()
+            else:
+                current_layer = self.mMapLayerComboBox.currentLayer()
+                self.canvas.setCurrentLayer(current_layer)
+
+            self.current_tool = GetLineTool(self.canvas, current_layer)
+            # connect signals
+            self.current_tool.decline_signal.connect(self.uset_tool)
+            self.current_tool.line_found_signl.connect(self.set_azimuth)
+
+            self.canvas.setMapTool(self.current_tool)
+            self.main_window.showMinimized()
         else:
-            current_layer = self.mMapLayerComboBox.currentLayer()
-            self.canvas.setCurrentLayer(current_layer)
-
-        self.current_tool = GetLineTool(self.canvas, current_layer)
-        # connect signals
-        self.current_tool.decline_signal.connect(self.uset_tool)
-        self.current_tool.line_found_signl.connect(self.set_azimuth)
-
-        self.canvas.setMapTool(self.current_tool)
-        self.main_window.showMinimized()
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("No seclected layer")
+            msg.setWindowTitle("No seclected layer")
+            msg.exec_()
 
     def uset_tool(self):
         self.canvas.unsetMapTool(self.current_tool)
@@ -132,13 +136,15 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         minX_val = min([vertex.x() for vertex in rotated_geometry.vertices()])
         minY_val = min([vertex.y() for vertex in rotated_geometry.vertices()])
         if self.debug:
-            print('ProfileGenerateHandle.add_profiles_button_handler got minimum X from geom: {}'.format(min([vertex.x() for vertex in rotated_geometry.vertices()])))
+            print('ProfileGenerateHandle.add_profiles_button_handler got minimum X from geom: {}'.format(
+                min([vertex.x() for vertex in rotated_geometry.vertices()])))
         # affineTransform.set_shift_vector((-1*minX_val, -1*minY_val))
         # rotated_geometry = affineTransform.shift_geom(rotated_geometry)
 
         types = ('Point', 'LineString', 'Polygon')
         if self.debug:
-            print("from ProfileGenerateHandle.add_profiles_button_handler self.lineEdit_layerName.text(): {}".format(self.lineEdit_profiles_name.text()))
+            print("from ProfileGenerateHandle.add_profiles_button_handler self.lineEdit_layerName.text(): {}".format(
+                self.lineEdit_profiles_name.text()))
         temp_layer = QgsVectorLayer("LineString", self.lineEdit_profiles_name.text(), "memory")
         temp_layer.setCrs(self.mMapLayerComboBox.currentLayer().crs())
         temp_provider = temp_layer.dataProvider()
@@ -148,13 +154,26 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
 
         for i in range(len(feats)):
             geom = feats[i].geometry()
-            geom.rotate(-1*rotation_angle, QgsPointXY(medianX_val, medianY_val))
+            geom.rotate(-1 * rotation_angle, QgsPointXY(medianX_val, medianY_val))
             feats[i].setGeometry(geom)
 
         for feat in feats:
             temp_provider.addFeature(feat)
         temp_layer.updateExtents()
-        QgsProject.instance().addMapLayer(temp_layer)
+        # TODO add save file
+        survey_profiles_group_list = RousettusPaths.get_survey_profiles_group(self.method_name_comboBox.currentText())
+        path_to_profile_file = RousettusPaths.get_flight_profiles_filepath(self.method_name_comboBox.currentText())
+        if self.debug:
+            print('path to project: {}'.format(self.main_window.current_project_path))
+            print('path to profile file: {}'.format(path_to_profile_file))
+        path_to_profile_file = os.sep.join([self.main_window.current_project_path, path_to_profile_file])
+        if self.debug:
+            print('path to project + profile file'.format(self.main_window.current_project_path + path_to_profile_file))
+            print('os.sep.join prj_path + filepath: {}'.format(path_to_profile_file))
+        profiles_group_node = init_layer_file.init_group_tree(survey_profiles_group_list['groups'])
+        output_gpkg_layer = init_layer_file.init_layer_to_file(path_to_profile_file, temp_layer)
+        QgsProject.instance().addMapLayer(output_gpkg_layer, False)
+        profiles_group_node.insertLayer(0, output_gpkg_layer)
 
     def generate_profiles(self, geometry):
         if self.debug:
@@ -165,8 +184,9 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         minY_val = min([vertex.y() for vertex in geometry.vertices()])
         maxX_val = max([vertex.x() for vertex in geometry.vertices()])
 
-        for vertex_index in range(len(vertices)-1):
-            segments.append(tuple(sorted([vertices[vertex_index], vertices[vertex_index+1]], key = lambda vertex:vertex.x())))
+        for vertex_index in range(len(vertices) - 1):
+            segments.append(
+                tuple(sorted([vertices[vertex_index], vertices[vertex_index + 1]], key=lambda vertex: vertex.x())))
 
         profile_delta = self.profile_distance_spinBox.value()
         current_profile_num = self.spinBox_first_num.value()
@@ -177,7 +197,8 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         profiles = []
 
         if self.debug:
-            print("from ProfileGenerateHandle.generate_profiles current_profile_dist: {}, maxX_val: {}".format(current_profile_dist, maxX_val))
+            print("from ProfileGenerateHandle.generate_profiles current_profile_dist: {}, maxX_val: {}".format(
+                current_profile_dist, maxX_val))
         if self.debug:
             print("from ProfileGenerateHandle.generate_profiles segments: {}".format(segments))
         # run around potential profiles to intersect
@@ -190,14 +211,20 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             if len(intersection_segments) < 2:
                 current_profile_dist += 1
                 continue
-            intersection_points = [self.get_intesection_point(current_profile_dist, segment) for segment in intersection_segments]
-            intersection_points = sorted(intersection_points, key=lambda point:point.y())
+            intersection_points = [self.get_intesection_point(current_profile_dist, segment) for segment in
+                                   intersection_segments]
+            intersection_points = sorted(intersection_points, key=lambda point: point.y())
             point_1 = intersection_points[0]
             point_1.setY(point_1.y() - overlap_distance)
-            point_2 = intersection_points[len(intersection_points)-1]
+            point_2 = intersection_points[len(intersection_points) - 1]
             point_2.setY(point_2.y() + overlap_distance)
             if self.debug:
-                print("from ProfileGenerateHandle.generate_profiles point1: {}, point2: {}, distance: {}".format(point_1, point_2, (point_1.distance(point_2))))
+                print(
+                    "from ProfileGenerateHandle.generate_profiles point1: {}, point2: {}, distance: {}".format(point_1,
+                                                                                                               point_2,
+                                                                                                               (
+                                                                                                                   point_1.distance(
+                                                                                                                       point_2))))
             if (point_1.distance(point_2)) < min_profile_len:
                 current_profile_dist += 1
                 continue
@@ -210,14 +237,12 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             print("from ProfileGenerateHandle.generate_profiles profiles: {}".format(profiles))
         return profiles
 
-
-
-
     # return intersection point between 2 QgsPoint tuple represents segment, and x vertical line
     def get_intesection_point(self, x, segment):
         # vertical segment check
         # if segment[1].x() == segment(0).x():
-        y_coord = (x - segment[0].x())/(segment[1].x() - segment[0].x())*(segment[1].y() - segment[0].y()) + segment[0].y()
+        y_coord = (x - segment[0].x()) / (segment[1].x() - segment[0].x()) * (segment[1].y() - segment[0].y()) + \
+                  segment[0].y()
         return QgsPoint(x, y_coord)
 
     def generate_profile_feature(self, line, profile_num):
@@ -229,7 +254,6 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         output_feat.setAttribute('azimuth', azimuth)
         output_feat.setAttribute('pr_dist', self.profile_distance_spinBox.value())
         return output_feat
-
 
     # load config function
     def load_config(self):
@@ -247,7 +271,8 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             if 'prof_layer_name' in self.config[self.section_name]:
                 layer_name = self.config[self.section_name].get('input_polygon_layer')
                 item_index = self.mMapLayerComboBox.findText(layer_name, flags=Qt.MatchFixedString)
-                print('match exactly ', item_index, 'Layer name: ', self.config[self.section_name].get('input_polygon_layer'))
+                print('match exactly ', item_index, 'Layer name: ',
+                      self.config[self.section_name].get('input_polygon_layer'))
                 if item_index >= 0:
                     self.mMapLayerComboBox.setCurrentIndex(item_index)
                 if 'input_polygon' in self.config[self.section_name]:
@@ -272,8 +297,3 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             self.config[self.section_name]['prof_layer_name'] = str(self.lineEdit_profiles_name.text())
             self.config[self.section_name]['input_polygon_layer'] = str(self.mMapLayerComboBox.currentText())
             self.config[self.section_name]['input_polygon'] = str(self.mFeaturePickerWidget.feature().id())
-
-
-
-
-
