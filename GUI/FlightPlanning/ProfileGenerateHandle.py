@@ -13,9 +13,8 @@ from qgis.gui import QgisInterface
 from qgis.utils import iface
 import os, statistics
 
-from ...tools.DataModels import RousettusPaths
 from ...tools.Configurable import Configurable
-from ...tools.DataProcessing.NodesFilesHandling import init_layer_file
+from ...tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG import VectorLayerSaverGPKG
 
 
 class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
@@ -88,6 +87,7 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             msg.setText("No seclected layer")
             msg.setWindowTitle("No seclected layer")
             msg.exec_()
+            self.pushButton_get_azimuth.setEnabled(True)
 
     def uset_tool(self):
         self.canvas.unsetMapTool(self.current_tool)
@@ -160,9 +160,11 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         for feat in feats:
             temp_provider.addFeature(feat)
         temp_layer.updateExtents()
-        # TODO add save file
-        survey_profiles_group_list = RousettusPaths.get_survey_profiles_group(self.method_name_comboBox.currentText())
-        path_to_profile_file = RousettusPaths.get_flight_profiles_filepath(self.method_name_comboBox.currentText())
+        # Save result to file
+        layer_saver_obj = VectorLayerSaverGPKG()
+        survey_profiles_group_list = layer_saver_obj.get_survey_profiles_group(self.method_name_comboBox.currentText())
+        path_to_profile_file = layer_saver_obj.get_flight_profiles_filepath(self.method_name_comboBox.currentText())
+
         if self.debug:
             print('path to project: {}'.format(self.main_window.current_project_path))
             print('path to profile file: {}'.format(path_to_profile_file))
@@ -170,8 +172,8 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         if self.debug:
             print('path to project + profile file'.format(self.main_window.current_project_path + path_to_profile_file))
             print('os.sep.join prj_path + filepath: {}'.format(path_to_profile_file))
-        profiles_group_node = init_layer_file.init_group_tree(survey_profiles_group_list['groups'])
-        output_gpkg_layer = init_layer_file.init_layer_to_file(path_to_profile_file, temp_layer)
+        profiles_group_node = layer_saver_obj.init_group_tree(survey_profiles_group_list['groups'])
+        output_gpkg_layer = layer_saver_obj.init_layer_to_file(path_to_profile_file, temp_layer)
         QgsProject.instance().addMapLayer(output_gpkg_layer, False)
         profiles_group_node.insertLayer(0, output_gpkg_layer)
 

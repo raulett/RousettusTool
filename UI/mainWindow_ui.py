@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'F:\YandexDisk\Work\ProjectsRepositories\20210416_Rousettus\RousettusTool\UI\mainWindow.ui'
+# Form implementation generated from reading ui file 'C:\Users\raule\YandexDisk\Work\ProjectsRepositories\20210416_Rousettus\RousettusTool\UI\mainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1280, 1016)
+        MainWindow.resize(1100, 900)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -106,7 +106,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.progressBar)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1280, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1100, 24))
         self.menubar.setObjectName("menubar")
         self.data_processing_menu = QtWidgets.QMenu(self.menubar)
         self.data_processing_menu.setEnabled(False)

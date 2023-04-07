@@ -113,10 +113,10 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
 
     def add_test_flight_generate_tab(self):
         if self.tab_exist_flags.get('Test Flight Plan', 0) == 0:
-            flight_planning_wiget = FlightPlanningTestHandle(main_window=self).set_config(self.rousettus_config)
-            self.tabWidget.addTab(flight_planning_wiget, 'Test Flight Plan')
+            flight_planning_widget = FlightPlanningTestHandle(main_window=self).set_config(self.rousettus_config)
+            self.tabWidget.addTab(flight_planning_widget, 'Test Flight Plan')
             self.tab_exist_flags['Test Flight Plan'] = 1
-            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Test Flight Plan'))
+            self.tabWidget.setCurrentWidget(flight_planning_widget)
             if 'TABS' not in self.rousettus_config:
                 # print('TABS not in config')
                 self.rousettus_config['TABS'] = {}
@@ -128,34 +128,32 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
 
     def add_flaght_planning_tab(self):
         if self.tab_exist_flags.get('Flight planning', 0) == 0:
-            flight_planning_wiget = FlightPlanningHandle(self, logger=self.logger, main_window=self)
-            self.tabWidget.addTab(flight_planning_wiget, 'Flight Planning')
+            flight_planning_widget = FlightPlanningHandle(self, logger=self.logger, main_window=self)
+            self.tabWidget.addTab(flight_planning_widget, 'Flight Planning')
             self.tab_exist_flags['Flight Planning'] = 1
-            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Flight Planning'))
+            self.tabWidget.setCurrentWidget(flight_planning_widget)
         else:
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Flight Planning'))
 
     def add_profile_generate_tab(self):
-        # if self.debug:
-        #     print ("called add_profile_function")
-        #     print("current tab_exist_flags['Profile Generate'] = {}".
-            #       format(self.tab_exist_flags.get('Profile Generate', 0)))
         if self.tab_exist_flags.get('Profile Generate', 0) == 0:
             # print('tabs in config: ', 'TABS' in self.rousettus_config)
             if 'TABS' not in self.rousettus_config:
                 # print('TABS not in config')
                 self.rousettus_config['TABS'] = {}
-            profile_generate_wiget = ProfileGenerateHandle(self, logger=self.logger,
+            profile_generate_widget = ProfileGenerateHandle(self, logger=self.logger,
                                                            main_window=self,
                                                            config=self.rousettus_config)
-            self.tabWidget.addTab(profile_generate_wiget, 'Profile Generate')
+            self.tabWidget.addTab(profile_generate_widget, 'Profile Generate')
             self.tab_exist_flags['Profile Generate'] = 1
-            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
+            self.tabWidget.setCurrentWidget(profile_generate_widget)
             if isinstance(self.tabWidget.currentWidget(), Configurable) and \
                     (self.tabWidget.currentWidget().section_name is not None):
                 self.rousettus_config['TABS'][self.tabWidget.currentWidget().section_name] = str(True)
         else:
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
+            # TODO Не работает активация таба, починить. Find child возвращает 0
+            print(self.tabWidget.findChild(QWidget, 'Profile Generate'))
 
     def closeTab(self, currentIndex):
         # if self.debug:
