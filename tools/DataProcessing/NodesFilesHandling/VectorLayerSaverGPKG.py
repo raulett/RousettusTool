@@ -1,13 +1,16 @@
 import os
-from qgis.core import QgsProject, QgsVectorLayer, QgsVectorFileWriter
+from qgis.core import QgsProject, QgsVectorLayer, QgsVectorFileWriter, Qgis
 
 
 class VectorLayerSaverGPKG():
-    debug = 1
+    debug = 0
+
     def __init__(self):
         self.layer_group_path = None
         self.layer_filepath = None
 
+    # Creates group tree in QGis interface. If groups exists it do nothing.
+    # group_structure - list of groups in hierarchy
     def init_group_tree(self, groups_structure: list):
         current_group_node = QgsProject.instance().layerTreeRoot()
         for group_name in groups_structure:
@@ -18,7 +21,8 @@ class VectorLayerSaverGPKG():
                 current_group_node = current_group_node.addGroup(group_name)
         return current_group_node
 
-    # get filepath and layer and returns layer, loaded from file to add it to project
+    # get full filename and layer, save layer to file if not exist and returns layer, loaded from file to add it to
+    # project
     def init_layer_to_file(self, filename: str, layer: QgsVectorLayer):
         if self.debug:
             print('file to save: {}'.format(filename))
@@ -27,8 +31,13 @@ class VectorLayerSaverGPKG():
             os.makedirs(path_to_file)
 
         options = QgsVectorFileWriter.SaveVectorOptions()
+        path_to_gpkg = '{}|layername={}'.format(filename, layer.name())
         if os.path.exists(filename):
-            options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
+            gpkg_layer = QgsVectorLayer(path_to_gpkg, layer.name(), 'ogr')
+            if not gpkg_layer.isValid():  # or not gpkg_layer.geometryType() == Qgis.GeometryType.Point:
+                options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
+            else:
+                return gpkg_layer
         options.driverName = 'GPKG'
         options.layerName = layer.name()
         _writer = QgsVectorFileWriter.writeAsVectorFormatV3(layer, os.path.splitext(filename)[0],
@@ -36,9 +45,8 @@ class VectorLayerSaverGPKG():
         if _writer[0] != 0:
             raise IOError(_writer)
 
-        path_to_gpkg = '{}|layername={}'.format(filename, layer.name())
         if self.debug:
-            print('fool gpkg path_to_gpkg: {},\n layername: {}'.format(path_to_gpkg, layer.name()))
+            print('full gpkg path_to_gpkg: {},\n layername: {}'.format(path_to_gpkg, layer.name()))
         output_layer = QgsVectorLayer(path_to_gpkg, layer.name(), 'ogr')
         if not output_layer.isValid():
             raise IOError('layer {} failed to load'.format(layer.name()))

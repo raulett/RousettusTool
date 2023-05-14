@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\raule\YandexDisk\Work\ProjectsRepositories\20210416_Rousettus\RousettusTool\UI\FlightPlanning\ProfileGenerate.ui'
+# Form implementation generated from reading ui file 'D:\YandexDisk\Work\ProjectsRepositories\20210416_Rousettus\RousettusTool\UI\FlightPlanning\ProfileGenerate.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -99,7 +99,7 @@ class Ui_ProfileGenerateWiget(object):
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem1)
         self.mFeaturePickerWidget = QgsFeaturePickerWidget(self.groupBox)
-        self.mFeaturePickerWidget.setMinimumSize(QtCore.QSize(0, 22))
+        self.mFeaturePickerWidget.setMinimumSize(QtCore.QSize(100, 22))
         self.mFeaturePickerWidget.setObjectName("mFeaturePickerWidget")
         self.horizontalLayout_2.addWidget(self.mFeaturePickerWidget)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
@@ -268,6 +268,10 @@ class Ui_ProfileGenerateWiget(object):
         self.gridLayout.addItem(spacerItem2, 0, 3, 1, 1)
         self.verticalLayout_3.addLayout(self.gridLayout)
         self.verticalLayout.addWidget(self.groupBox_2)
+        self.groupBox_4 = QtWidgets.QGroupBox(ProfileGenerateWiget)
+        self.groupBox_4.setMinimumSize(QtCore.QSize(0, 100))
+        self.groupBox_4.setObjectName("groupBox_4")
+        self.verticalLayout.addWidget(self.groupBox_4)
         spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem3)
         self.groupBox_3 = QtWidgets.QGroupBox(ProfileGenerateWiget)
@@ -355,6 +359,7 @@ class Ui_ProfileGenerateWiget(object):
         self.pushButton_get_azimuth.setToolTip(_translate("ProfileGenerateWiget", "choose line on current line or polygon layer"))
         self.pushButton_get_azimuth.setText(_translate("ProfileGenerateWiget", "Get azimuth"))
         self.label_9.setText(_translate("ProfileGenerateWiget", "Profile distance, m"))
+        self.groupBox_4.setTitle(_translate("ProfileGenerateWiget", "Cut_profiles"))
         self.groupBox_3.setTitle(_translate("ProfileGenerateWiget", "Output"))
         self.label_3.setText(_translate("ProfileGenerateWiget", "Profile layer name"))
         self.lineEdit_profiles_name.setText(_translate("ProfileGenerateWiget", "survey_profiles"))

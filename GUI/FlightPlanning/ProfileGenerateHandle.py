@@ -41,7 +41,7 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         # connect signals
         self.pushButton_get_azimuth.clicked.connect(self.push_button_get_azimuth_handler)
         self.pushButton_add_profiles.clicked.connect(self.add_profiles_button_handler)
-        self.mMapLayerComboBox.layerChanged.connect(self.mFeaturePickerWidget.setLayer)
+        self.mMapLayerComboBox.layerChanged.connect(self.mMapLayerComboBox_update_layer_handler)
         self.initGui()
         self.update_polygon_features_combobox()
         self.load_config()
@@ -126,8 +126,6 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
 
     def add_profiles_button_handler(self):
         rotation_angle = -1 * self.spinBox_azimuth.value()
-        affineTransform = AffilneTransform(rotation_angle)
-        # rotated_geometry = affineTransform.transform_geom(self.mFeaturePickerWidget.feature().geometry())
         geometry = self.mFeaturePickerWidget.feature().geometry()
         medianX_val = statistics.median([vertex.x() for vertex in geometry.vertices()])
         medianY_val = statistics.median([vertex.y() for vertex in geometry.vertices()])
@@ -145,7 +143,10 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         if self.debug:
             print("from ProfileGenerateHandle.add_profiles_button_handler self.lineEdit_layerName.text(): {}".format(
                 self.lineEdit_profiles_name.text()))
-        temp_layer = QgsVectorLayer("LineString", self.lineEdit_profiles_name.text(), "memory")
+        profile_layer_name = "{}_{}_{}".format(self.mFeaturePickerWidget.layer().name(),
+                                               self.mFeaturePickerWidget.feature().id(),
+                                               self.lineEdit_profiles_name.text())
+        temp_layer = QgsVectorLayer("LineString", profile_layer_name, "memory")
         temp_layer.setCrs(self.mMapLayerComboBox.currentLayer().crs())
         temp_provider = temp_layer.dataProvider()
         feats = self.generate_profiles(rotated_geometry)
@@ -273,8 +274,9 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             if 'prof_layer_name' in self.config[self.section_name]:
                 layer_name = self.config[self.section_name].get('input_polygon_layer')
                 item_index = self.mMapLayerComboBox.findText(layer_name, flags=Qt.MatchFixedString)
-                print('match exactly ', item_index, 'Layer name: ',
-                      self.config[self.section_name].get('input_polygon_layer'))
+                if self.debug:
+                    print('match exactly ', item_index, 'Layer name: ',
+                          self.config[self.section_name].get('input_polygon_layer'))
                 if item_index >= 0:
                     self.mMapLayerComboBox.setCurrentIndex(item_index)
                 if 'input_polygon' in self.config[self.section_name]:

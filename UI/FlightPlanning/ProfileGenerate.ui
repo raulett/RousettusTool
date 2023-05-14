@@ -209,10 +209,10 @@
          </spacer>
         </item>
         <item>
-         <widget class="QgsFeaturePickerWidget" name="mFeaturePickerWidget" native="true">
+         <widget class="QgsFeaturePickerWidget" name="mFeaturePickerWidget">
           <property name="minimumSize">
            <size>
-            <width>0</width>
+            <width>100</width>
             <height>22</height>
            </size>
           </property>
@@ -318,7 +318,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget" native="true">
+         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -634,6 +634,19 @@
        </layout>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>100</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Cut_profiles</string>
+     </property>
     </widget>
    </item>
    <item>
