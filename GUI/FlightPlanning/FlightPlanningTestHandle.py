@@ -1,4 +1,4 @@
-from ...UI.FlightPlanning.FlightPlan_test_ui import Ui_FlightPlan_test_form
+from ...UI.FlightPlanning.FlightPlan_ui import Ui_FlightPlan_form
 from qgis.PyQt.QtWidgets import QDialog
 from PyQt5.QtWidgets import QFileDialog
 
@@ -16,7 +16,7 @@ import time
 
 
 # TODO сдедать проверку, что маршрут полностью закрыт демкой
-class FlightPlanningTestHandle(Ui_FlightPlan_test_form, QDialog, Configurable):
+class FlightPlanningTestHandle(Ui_FlightPlan_form, QDialog, Configurable):
     def __init__(self, main_window=None):
         super().__init__()
         self.takeoff_point_altitude = None
@@ -62,11 +62,7 @@ class FlightPlanningTestHandle(Ui_FlightPlan_test_form, QDialog, Configurable):
         self.flight_plan.make_initial_flight_plan()
 
     def generate_flight_btn_pushed(self):
-        # print('test flight plan btn pushed')
         # Init FlightRoute
-
-        # print('init flight points: ', ((i, point['distance'], point['gnd_alt']) for i, point in enumerate(self.flight_plan.get_flight_points())))
-        # print('init flight points len: ', len(self.flight_plan.get_flight_points()))
         start_time = time.time()
         print('Currebt combobox_func_ index', self.comboBox_function.currentIndex())
         if self.comboBox_function.currentIndex() == 0:

@@ -27,6 +27,7 @@ class RoutePlanner:
     process_algorithm_debug_step_planning = 0
     process_algorithm_debug = 0
     init_debug = 0
+    initial_choose_profiles_debug = 0
     debug_visualisation = 0
     cut_segment_debug = 0
     estimate_single_profile_debug = 0
@@ -67,10 +68,15 @@ class RoutePlanner:
         self.max_service_flight_len = max_service_flight_len
         self.profile_layer_crs = profile_layer.crs()
         self.to_point_crs = takeoff_point_crs
+        if self.init_debug:
+            print("source crs: {}, dest crs: {}".format(self.profile_layer_crs, self.to_point_crs))
         coord_transform = QgsCoordinateTransform(self.to_point_crs, self.profile_layer_crs, QgsProject.instance())
         self.takeoff_point_geometry = takeoff_point.geometry()
-        self.takeoff_point_geometry.transform(coord_transform)
+        transform_result = self.takeoff_point_geometry.transform(coord_transform)
         self._current_takeoff_point_place = self.takeoff_point_geometry.asPoint()
+        if self.init_debug:
+            print("current takeoff point coordinate: ", self._current_takeoff_point_place)
+            print("transform_result: ", transform_result)
         self.not_planned_profiles = []
         self.planned_routes = []
         if not selected_only_flag:
@@ -92,38 +98,19 @@ class RoutePlanner:
         self.planned_routes_fields.append(QgsField('profiles', QVariant.String))
         if self.init_debug:
             print("====end init======\n")
-        if self.debug_visualisation:
-            class DebugVisualisator:
-                def __init__(self, profile_layer: QgsVectorLayer):
-                    self.planned_routes = None
-                    out_of_plan_profiles_layername = "out_of_plan"
-                    routes_layer_name = "routes"
-                    temp_layer_name = "temp profiles"
-                    nearest_profiles_layername = "nearest_profiles"
-                    segment_points_layername = "segment_points"
-                    self.planned_routes_fields = QgsFields()
-                    self.planned_routes_fields.append(QgsField('name', QVariant.String))
-                    self.planned_routes_fields.append(QgsField('service', QVariant.String))
-                    self.planned_routes_fields.append(QgsField('length', QVariant.Double))
-                    self.planned_routes_fields.append(QgsField('profiles', QVariant.String))
-                    self.profiles_layer_fields = profile_layer.fields()
-
-                def init_layers(self):
-                    pass
-
-                def update_points(self, points_list):
-                    pass
 
     def process_algorithm(self):
         """
-        основной алгоритм, осуществляющий планирование маршрутов.
+        Основной алгоритм, осуществляющий планирование маршрутов.
         :return:
         """
         # Отберем профиля на расстоянии долета в новый слой
 
         if self.process_algorithm_debug:
             print("\n====general process algorithm======")
-        self.rotate_features().move_features().scale_features()
+        self.rotate_features()
+        self.move_features()
+        self.scale_features()
         self.temp_planning_profiles, self.not_planned_profiles = \
             self.initial_choose_profiles(self.not_planned_profiles)
         if self.process_algorithm_debug:
@@ -326,7 +313,13 @@ class RoutePlanner:
             route_direction_prefix = "S"
         else:
             route_direction_prefix = "O"
-        route_name = "{}_f{}{}".format(self.takeoff_point_name, route_num_prefix, route_direction_prefix)
+        estimate_route_name = "{}_f{}{}".format(self.takeoff_point_name, route_num_prefix, route_direction_prefix)
+        planned_routes_names = [planned_route.attribute('name') for planned_route in self.planned_routes]
+        counter = 0
+        while estimate_route_name in planned_routes_names:
+            counter += 1
+            estimate_route_name = "{}_f{}{}_{}".format(self.takeoff_point_name, route_num_prefix,
+                                                       route_direction_prefix, counter)
         # Формируем значения аттрибутов
         route_service_str = ";".join([str(attr) for attr in result_attribute_points])
         route_geometry = QgsGeometry().fromPolylineXY(result_route_points)
@@ -334,7 +327,7 @@ class RoutePlanner:
         route_profiles = ";".join([str(prof.attribute('prof_num')) for prof in exluded_profiles])
         route_feature = QgsFeature()
         route_feature.setFields(self.planned_routes_fields)
-        route_feature.setAttributes([route_name, route_service_str, route_length / 10, route_profiles])
+        route_feature.setAttributes([estimate_route_name, route_service_str, route_length / 10, route_profiles])
         route_feature.setGeometry(route_geometry)
         if self.plan_next_route_debug:
             print("output of 'plan next route': ")
@@ -485,7 +478,7 @@ class RoutePlanner:
                 print("vertex distance is 0, return NONE")
                 print("===end estimate single profile===\n")
             return None
-        max_profile_segment = (max_segment_len - 2*current_segment_len) / 2
+        max_profile_segment = (max_segment_len - 2 * current_segment_len) / 2
         if current_point.distance(vertex_list[1]) <= max_profile_segment:
             point = vertex_list[1]
         else:
@@ -685,7 +678,6 @@ class RoutePlanner:
         # Случай, когда не хватает расстояния долететь до конца профиля
         if self.plan_p_segment_outer_debug:
             print("Set_point_2 section")
-
         max_profile_seg_len = (max_segment_len - 2 * (current_segment_len + self.profiles_distance)) / 2
         if max_profile_seg_len < dist_to_target_point:
             # Если сегмент не превый, то возращаем None
@@ -717,7 +709,12 @@ class RoutePlanner:
             print("target point: {}, final point: {}".format(target_point, final_point))
             print("segment_points: ", segment_points)
         profile_len = target_point.distance(final_point)
-        estimating_rest = current_segment_len + current_point.distance(target_point) + profile_len
+        estimating_rest = current_point.distance(target_point) + profile_len + final_point.distance(initial_point)
+        if self.plan_p_segment_outer_debug:
+            print("profile 2 len: {}, estimating_rest: {}".format(profile_len, estimating_rest))
+            print("max_segment_len - current_segment_len - "
+                  "estimating_rest: {} - {} - {} = {}".format(max_segment_len, current_segment_len, estimating_rest,
+                                                              max_segment_len - current_segment_len - estimating_rest))
         # поставим точку 3
         if max_segment_len - current_segment_len - estimating_rest >= 0:
             # Дальности хватает, планируем перелет в вершину
@@ -874,7 +871,7 @@ class RoutePlanner:
             print("output_feature_list: ", [output_feature.attribute('prof_num') for output_feature
                                             in output_feature_list])
             print("output_feature_list geometries: ", [output_feature.geometry() for output_feature
-                                            in output_feature_list])
+                                                       in output_feature_list])
             print("feature id to remove", remove_feats_id)
             print("====end cut segment======\n")
         return output_feature_list, remove_feats_id
@@ -893,7 +890,6 @@ class RoutePlanner:
         provider = layer.dataProvider()
         provider.addAttributes(packing_features[0].fields())
         layer.updateFields()
-        # TODO Сделать, чтобы fid Переформировались заново перед упаковкой
         provider.addFeatures(packing_features)
         provider.createSpatialIndex()
         layer.commitChanges()
@@ -913,13 +909,19 @@ class RoutePlanner:
 
         def rotate_features_list(feature_list: List[QgsFeature]):
             for feat in feature_list:
+                if self.rotate_feats_debug:
+                    print("feat before rotation: ", feat.geometry())
                 geom = feat.geometry()
                 geom.rotate(-1 * self.profiles_azimuth if not rotate_back_flag else self.profiles_azimuth,
                             self._current_takeoff_point_place)
                 feat.setGeometry(geom)
+                if self.rotate_feats_debug:
+                    print("feat after rotation: ", feat.geometry())
 
         rotate_features_list(self.not_planned_profiles)
         rotate_features_list(self.planned_routes)
+        if self.rotate_feats_debug:
+            print("===end call rotate_features===\n")
         return self
 
     def scale_features(self, move_back_flag: bool = False) -> 'RoutePlanner':
@@ -959,6 +961,8 @@ class RoutePlanner:
 
         def move_qgs_line_string_feat(feature_list: List[QgsFeature]):
             for feat in feature_list:
+                if self.move_feats_debug:
+                    print("before move line: ", feat.geometry())
                 geom = feat.geometry()
                 new_points = []
 
@@ -970,10 +974,13 @@ class RoutePlanner:
 
                     new_points.append(QgsPointXY(new_x, new_y))
                 feat.setGeometry(QgsLineString(new_points))
+                if self.move_feats_debug:
+                    print("new line: ", feat.geometry())
 
         move_qgs_line_string_feat(self.not_planned_profiles)
         move_qgs_line_string_feat(self.planned_routes)
-
+        if self.move_feats_debug:
+            print("\n====END move_features=====")
         return self
 
     def initial_choose_profiles(self, filtering_profiles: List[QgsFeature]):
@@ -988,8 +995,8 @@ class RoutePlanner:
         chosen_profiles = []  # Профиля вошедшие в отбор.
         profiles_quantity = len(filtering_profiles)
         current_progress = 0
-        if self.debug:
-            print("\n==================")
+        if self.initial_choose_profiles_debug:
+            print("\n===begin initial_choose_profiles===")
             print("go in initial_choose_profile: ")
             print("Current profiles quantity: ", len(filtering_profiles))
             print("Current max_service_flight_len: ", self.max_service_flight_len)
@@ -1002,6 +1009,9 @@ class RoutePlanner:
             profile_x_coord = list(feat.geometry().vertices())[0].x()
             profile_distance = feat.geometry().distance(QgsGeometry().fromPointXY(self._current_takeoff_point_place))
             profile_number = feat.attribute('prof_num')
+            if self.initial_choose_profiles_debug:
+                print("{} profile_num: {}, x coord: {}, distance: {}".format(i, profile_number,
+                                                                             profile_x_coord, profile_distance))
             if profile_distance < self.max_service_flight_len:
                 chosen_profiles.append(QgsFeature(feat))
             else:
@@ -1012,6 +1022,8 @@ class RoutePlanner:
                     chosen_profiles.append(QgsFeature(feat))
                 else:
                     filtered_features.append(QgsFeature(feat))
+        if self.initial_choose_profiles_debug:
+            print("===end initial_choose_profiles===\n")
         return chosen_profiles, filtered_features
 
     def get_output_profiles(self):

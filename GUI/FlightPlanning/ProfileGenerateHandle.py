@@ -42,9 +42,10 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         self.pushButton_get_azimuth.clicked.connect(self.push_button_get_azimuth_handler)
         self.pushButton_add_profiles.clicked.connect(self.add_profiles_button_handler)
         self.mMapLayerComboBox.layerChanged.connect(self.mMapLayerComboBox_update_layer_handler)
-        self.initGui()
-        self.update_polygon_features_combobox()
         self.load_config()
+        self.initGui()
+
+
 
     def initGui(self):
         self.mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
@@ -52,7 +53,8 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             self.lineEdit_projectName.setText(str(self.main_window.profiles_save_path))
         except Exception as e:
             self.logger.log_msg("no project name from main window. {}".format(e), self.module_tag, Qgis.Warning)
-        self.set_icon()
+        self.mMapLayerComboBox_update_layer_handler()
+        self.update_polygon_features_combobox()
 
     def update_polygon_features_combobox(self):
         self.mFeaturePickerWidget.setLayer(self.mMapLayerComboBox.currentLayer())
@@ -143,9 +145,10 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         if self.debug:
             print("from ProfileGenerateHandle.add_profiles_button_handler self.lineEdit_layerName.text(): {}".format(
                 self.lineEdit_profiles_name.text()))
-        profile_layer_name = "{}_{}_{}".format(self.mFeaturePickerWidget.layer().name(),
+        profile_layer_name = "{}_{}_{}_0".format(self.mFeaturePickerWidget.layer().name(),
                                                self.mFeaturePickerWidget.feature().id(),
                                                self.lineEdit_profiles_name.text())
+
         temp_layer = QgsVectorLayer("LineString", profile_layer_name, "memory")
         temp_layer.setCrs(self.mMapLayerComboBox.currentLayer().crs())
         temp_provider = temp_layer.dataProvider()
@@ -175,8 +178,8 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             print('os.sep.join prj_path + filepath: {}'.format(path_to_profile_file))
         profiles_group_node = layer_saver_obj.init_group_tree(survey_profiles_group_list['groups'])
         output_gpkg_layer = layer_saver_obj.init_layer_to_file(path_to_profile_file, temp_layer)
-        QgsProject.instance().addMapLayer(output_gpkg_layer, False)
-        profiles_group_node.insertLayer(0, output_gpkg_layer)
+        layer_saver_obj.add_layer_to_group(output_gpkg_layer, profiles_group_node)
+        layer_saver_obj.set_style_to_profiles_layer(output_gpkg_layer, self.main_window.plugin_path)
 
     def generate_profiles(self, geometry):
         if self.debug:
@@ -223,11 +226,8 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
             point_2.setY(point_2.y() + overlap_distance)
             if self.debug:
                 print(
-                    "from ProfileGenerateHandle.generate_profiles point1: {}, point2: {}, distance: {}".format(point_1,
-                                                                                                               point_2,
-                                                                                                               (
-                                                                                                                   point_1.distance(
-                                                                                                                       point_2))))
+                    "from ProfileGenerateHandle.generate_profiles point1: "
+                    "{}, point2: {}, distance: {}".format(point_1, point_2, (point_1.distance(point_2))))
             if (point_1.distance(point_2)) < min_profile_len:
                 current_profile_dist += 1
                 continue
