@@ -41,8 +41,8 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
         # todo debug project name
 
         # инициализация конфига
-        plugin_path = r"\\".join(os.path.dirname(os.path.realpath(__file__)).split(os.sep)[:-1])
-        self.rousettus_config_file = os.path.join(plugin_path, 'config.ini')
+        self.plugin_path = os.sep.join(os.path.dirname(os.path.realpath(__file__)).split(os.sep)[:-1])
+        self.rousettus_config_file = os.path.join(self.plugin_path, 'config.ini')
         self.rousettus_config = configparser.ConfigParser()
         self.load_config()
 
@@ -68,7 +68,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
         self.actionMake_Profiles.triggered.connect(self.add_profile_generate_tab)
         self.actionPlan_routes.triggered.connect(self.add_route_plan_tab)
         self.actionAbout_Rousettus.triggered.connect(self.show_about)
-        self.actionplan_test.triggered.connect(self.add_test_flight_generate_tab)
+        self.actionplan_test.triggered.connect(self.add_flight_generate_tab)
 
         # Add config events
         # self.closeEvent.connect(self.store_config)
@@ -126,13 +126,13 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             if self.debug:
                 print("self.tabWidget.count() ", self.tabWidget.count())
 
-    def add_test_flight_generate_tab(self):
-        tab_name = 'Test Flight Plan'
-        section_name = 'test_flight_plan'
+    def add_flight_generate_tab(self):
+        tab_name = 'Flight Plan'
+        section_name = 'flight_plan'
         if self.debug:
-            print(r'self.tab_exist_flags.get("Test Flight Plan", 0) == 0 ', self.tab_exist_flags.get(tab_name, 0) == 0)
+            print(r'self.tab_exist_flags.get("Flight Plan", 0) == 0 ', self.tab_exist_flags.get(tab_name, 0) == 0)
         if self.tab_exist_flags.get(tab_name, 0) == 0:
-            flight_planning_widget = FlightPlanningTestHandle(main_window=self).set_config(self.rousettus_config)
+            flight_planning_widget = FlightPlanningHandle(main_window=self).set_config(self.rousettus_config)
             self.tabWidget.addTab(flight_planning_widget, tab_name)
             self.tab_exist_flags[tab_name] = 1
             self.tabWidget.setCurrentWidget(flight_planning_widget)
@@ -236,9 +236,9 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
         if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("profile_generate",
                                                                                         fallback=False):
             self.add_profile_generate_tab()
-        if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("test_flight_plan",
+        if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("flight_plan",
                                                                                         fallback=False):
-            self.add_test_flight_generate_tab()
+            self.add_flight_generate_tab()
         if 'TABS' in self.rousettus_config and self.rousettus_config['TABS'].getboolean("route_plan", fallback=False):
             self.add_route_plan_tab()
 

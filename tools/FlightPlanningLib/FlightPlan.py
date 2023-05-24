@@ -67,13 +67,14 @@ class FlightPlan(FlightRoute):
                 self.flight_points.append(flight_point)
                 first_iteration_done = 1
             else:
-                k_alt_coef, b_alt_coef = generate_linear_by_two_points((self.input_multiline[i-1][2],
-                                                                     self.get_altitude(self.input_multiline[i-1][2])),
-                                                                    (route_point[2],
-                                                                     self.get_altitude(route_point[2])))
+                k_alt_coef, b_alt_coef = generate_linear_by_two_points((self.input_multiline[i - 1][2],
+                                                                        self.get_altitude(
+                                                                            self.input_multiline[i - 1][2])),
+                                                                       (route_point[2],
+                                                                        self.get_altitude(route_point[2])))
                 flight_point = dict(distance=route_point[2],
                                     gnd_alt=self.get_altitude(route_point[2]),
-                                    is_service_flag=self.service_flight_flags_list[i-1],
+                                    is_service_flag=self.service_flight_flags_list[i - 1],
                                     k_alt_coef=k_alt_coef,
                                     b_alt_coef=b_alt_coef,
                                     flight_alt=self.flight_alt_agl,
@@ -88,14 +89,14 @@ class FlightPlan(FlightRoute):
         prev_point = None
         for i, flight_point in enumerate(self.flight_points):
             if i == 0:
-                new_flight_point = dict(distance = current_distance,
-                                    gnd_alt=self.get_altitude(current_distance),
-                                    is_service_flag=0,
-                                    k_alt_coef=0,
-                                    b_alt_coef=0,
-                                    flight_alt=self.flight_alt_agl,
-                                    prepared_flag=1,
-                                    is_corner_point_flag=1)
+                new_flight_point = dict(distance=current_distance,
+                                        gnd_alt=self.get_altitude(current_distance),
+                                        is_service_flag=0,
+                                        k_alt_coef=0,
+                                        b_alt_coef=0,
+                                        flight_alt=self.flight_alt_agl,
+                                        prepared_flag=1,
+                                        is_corner_point_flag=1)
                 new_flight_plan.append(new_flight_point)
                 current_distance += point_distance
                 prev_point = new_flight_point
@@ -106,14 +107,14 @@ class FlightPlan(FlightRoute):
                                                                             self.get_altitude(
                                                                                 prev_point['distance'])),
                                                                            (current_distance, flight_g_alt))
-                    new_flight_point = dict(distance = current_distance,
-                                    gnd_alt=self.get_altitude(current_distance),
-                                    is_service_flag= flight_point['is_service_flag'],
-                                    k_alt_coef=k_alt_coef,
-                                    b_alt_coef=b_alt_coef,
-                                    flight_alt=self.flight_alt_agl,
-                                    prepared_flag=1,
-                                    is_corner_point_flag=1)
+                    new_flight_point = dict(distance=current_distance,
+                                            gnd_alt=self.get_altitude(current_distance),
+                                            is_service_flag=flight_point['is_service_flag'],
+                                            k_alt_coef=k_alt_coef,
+                                            b_alt_coef=b_alt_coef,
+                                            flight_alt=self.flight_alt_agl,
+                                            prepared_flag=1,
+                                            is_corner_point_flag=1)
                     prev_point = new_flight_point
                     new_flight_plan.append(new_flight_point)
                     current_distance += point_distance
@@ -124,13 +125,13 @@ class FlightPlan(FlightRoute):
                                                                             prev_point['distance'])),
                                                                        (current_distance, flight_g_alt))
                 new_flight_point = dict(distance=current_distance,
-                                    gnd_alt=flight_g_alt,
-                                    is_service_flag=flight_point['is_service_flag'],
-                                    k_alt_coef=k_alt_coef,
-                                    b_alt_coef=b_alt_coef,
-                                    flight_alt=self.flight_alt_agl,
-                                    prepared_flag=1,
-                                    is_corner_point_flag=1)
+                                        gnd_alt=flight_g_alt,
+                                        is_service_flag=flight_point['is_service_flag'],
+                                        k_alt_coef=k_alt_coef,
+                                        b_alt_coef=b_alt_coef,
+                                        flight_alt=self.flight_alt_agl,
+                                        prepared_flag=1,
+                                        is_corner_point_flag=1)
                 prev_point = new_flight_point
                 new_flight_plan.append(new_flight_point)
                 current_distance += point_distance
@@ -139,15 +140,14 @@ class FlightPlan(FlightRoute):
     def make_flight_plan(self):
         # print('call make flight plan')
         all_prepared_flag = 0
-        # pydevd_pycharm.settrace('localhost', port=5566, stdoutToServer=True, stderrToServer=True)
         while all_prepared_flag == 0:
             all_prepared_flag = 1
             for i, flight_point in enumerate(self.flight_points):
                 # print('execute for cycle')
                 if flight_point['prepared_flag'] == 0:
                     all_prepared_flag = 0
-                    self.flight_points[i-1: i+1] = self.add_mid_flight_point(self.flight_points[i-1],
-                                                                             self.flight_points[i])
+                    self.flight_points[i - 1: i + 1] = self.add_mid_flight_point(self.flight_points[i - 1],
+                                                                                 self.flight_points[i])
                     # print('New points: ', self.flight_points[i - 1], '; ', self.flight_points[i])
                     # print('Renew flight points count', len(self.flight_points))
                     time.sleep(1)
@@ -236,20 +236,12 @@ class FlightPlan(FlightRoute):
     def get_flight_points(self):
         return self.flight_points
 
-    """
-        returns metrics of flight plan: 
-        points count,
-        total lenght
-        total climb
-        total desc
-        average standart_deviation  
-    """
     def get_flight_metrics(self):
         result = {}
         standart_dev_list = []
         points_count = len(self.flight_points)
         current_fp = 1
-        tot_lenght = self.alt_points[len(self.alt_points)-1][0]
+        tot_lenght = self.alt_points[len(self.alt_points) - 1][0]
         tot_climb = 0
         tot_desc = 0
         prev_alt = None
@@ -262,18 +254,18 @@ class FlightPlan(FlightRoute):
             else:
                 if self.flight_points[current_fp]['is_service_flag'] == 0:
                     continue
-                delta = (self.flight_points[current_fp]['k_alt_coef']*alt_point[0]+
-                         self.flight_points[current_fp]['b_alt_coef'])-alt_point[1]
+                delta = (self.flight_points[current_fp]['k_alt_coef'] * alt_point[0] +
+                         self.flight_points[current_fp]['b_alt_coef']) - alt_point[1]
                 if delta > max_delta:
                     max_delta = delta
                 if delta < min_delta:
                     min_delta = delta
-                std_dev_in_point = math.sqrt(((self.flight_points[current_fp]['k_alt_coef']*alt_point[0]+
-                                              self.flight_points[current_fp]['b_alt_coef'])-alt_point[1])**2)
+                std_dev_in_point = math.sqrt(((self.flight_points[current_fp]['k_alt_coef'] * alt_point[0] +
+                                               self.flight_points[current_fp]['b_alt_coef']) - alt_point[1]) ** 2)
                 standart_dev_list.append(std_dev_in_point)
         result['max_delta'] = max_delta
         result['min_delta'] = min_delta
-        result['average_SD'] = sum(standart_dev_list)/len(standart_dev_list)
+        result['average_SD'] = sum(standart_dev_list) / len(standart_dev_list)
         result['points_count'] = points_count
         result['tot_lenght'] = tot_lenght
         for i, flight_point in enumerate(self.flight_points):

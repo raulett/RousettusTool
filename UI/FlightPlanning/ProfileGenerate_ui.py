@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ProfileGenerateWiget(object):
     def setupUi(self, ProfileGenerateWiget):
         ProfileGenerateWiget.setObjectName("ProfileGenerateWiget")
-        ProfileGenerateWiget.resize(699, 670)
+        ProfileGenerateWiget.resize(699, 615)
         ProfileGenerateWiget.setMinimumSize(QtCore.QSize(0, 460))
         ProfileGenerateWiget.setStyleSheet("font-size:10pt")
         self.verticalLayout = QtWidgets.QVBoxLayout(ProfileGenerateWiget)
@@ -210,6 +210,7 @@ class Ui_ProfileGenerateWiget(object):
         self.gridLayout.addWidget(self.label_7, 2, 0, 1, 1)
         self.checkBox_overwrite = QtWidgets.QCheckBox(self.groupBox_2)
         self.checkBox_overwrite.setEnabled(False)
+        self.checkBox_overwrite.setMinimumSize(QtCore.QSize(0, 22))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.checkBox_overwrite.setFont(font)
@@ -259,6 +260,7 @@ class Ui_ProfileGenerateWiget(object):
         self.profile_distance_spinBox.setObjectName("profile_distance_spinBox")
         self.gridLayout.addWidget(self.profile_distance_spinBox, 4, 1, 1, 1)
         self.spinBox_azimuth = QtWidgets.QDoubleSpinBox(self.groupBox_2)
+        self.spinBox_azimuth.setMinimumSize(QtCore.QSize(0, 22))
         self.spinBox_azimuth.setDecimals(4)
         self.spinBox_azimuth.setMinimum(-91.0)
         self.spinBox_azimuth.setMaximum(91.0)
