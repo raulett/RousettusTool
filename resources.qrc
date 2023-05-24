@@ -1,5 +1,11 @@
 <RCC>
-    <qresource prefix="RousettusTool" >
-        <file>resources/rousettusTool.png</file>
+    <qresource prefix="/plugins/RousettusTool" >
+        <file>resources/rousettaIcon.png</file>
     </qresource>
+    <qresource prefix="/plugins/RousettusTool" >
+        <file>resources/warning.png</file>
+    </qresource>
+    <resources>
+        <include location="plugins/RousettusTool/libs/LinearSplineInterpolation"/>
+    </resources>
 </RCC>
