@@ -7,7 +7,7 @@ from qgis.core import QgsVectorLayer, QgsFeature, QgsPoint, QgsCoordinateReferen
     QgsProject, QgsPointXY, QgsLineString, QgsGeometry, QgsSpatialIndex, QgsFeatureRequest, QgsWkbTypes, QgsFields, \
     QgsField, QgsExpression
 
-import pydevd_pycharm
+# import pydevd_pycharm
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
