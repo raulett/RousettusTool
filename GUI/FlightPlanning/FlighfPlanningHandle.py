@@ -75,10 +75,18 @@ class FlightPlanningHandle(Ui_FlightPlan_form, QDialog, Configurable):
             print("\n===end init_flight_btn_pushed===")
 
     def show_flight_graph(self):
+
         dist_alt_table = self.flight_planner.get_altitude_points_list()
         print('flight_metrics: ', self.flight_planner.get_flight_metrics())
         flight_plan = self.flight_planner.get_flight_points()
         fig, ax = plt.subplots()
+        ax.xaxis.set_major_locator(mpl.ticker.MultipleLocator(500))
+        ax.xaxis.set_minor_locator(mpl.ticker.MultipleLocator(50))
+        ax.yaxis.set_major_locator(mpl.ticker.MultipleLocator(25))
+        ax.yaxis.set_minor_locator(mpl.ticker.MultipleLocator(5))
+        ax.grid(color='g', linestyle=':', linewidth=0.5)
+        ax.set_xlabel('Distance, m')
+        ax.set_ylabel('Altitude, m')
         ax.plot([point[0] for point in dist_alt_table], [point[1] for point in dist_alt_table])
         ax.scatter([p[2] for p in self.flight_planner.get_turning_points()],
                    [self.flight_planner.get_altitude(p[2]) for p in self.flight_planner.get_turning_points()],
@@ -87,10 +95,6 @@ class FlightPlanningHandle(Ui_FlightPlan_form, QDialog, Configurable):
                 [point['flight_alt'] + point['gnd_alt'] for point in flight_plan])
         ax.scatter([point['distance'] for point in flight_plan],
                    [point['flight_alt'] + point['gnd_alt'] for point in flight_plan], color='g')
-        # print('flight altitudes: ')
-        # print(str([point['flight_alt'] for point in dist_alt_table]))
-        # print("ground altitudes: ")
-        # print([point['flight_alt'] for point in dist_alt_table)
         plt.fill_between([point[0] for point in dist_alt_table],
                          [point[1] + self.up_deviation_spinbox.value() +
                           self.flight_alt_spinBox.value() for point in dist_alt_table],

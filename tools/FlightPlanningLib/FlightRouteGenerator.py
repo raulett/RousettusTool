@@ -11,7 +11,7 @@ class FlightRouteGenerator:
     '''
     @:param survey_profiles_layer QgisVectorLayer object, with prof_num, azimuth, pr_dist attributes.
     crs must be metric
-    prof_num - profiles have to be enumerate.
+    prof_num - profiles have to be enumerated.
     azimuth - azimuth of profiles
     @:param takeoff_point - sould have the same crs as survey profile layer
     @:param dist_limit - maximum flight route lenght.

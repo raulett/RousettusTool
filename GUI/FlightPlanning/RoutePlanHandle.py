@@ -56,11 +56,12 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
         self.profiles_mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.LineLayer)
         self.update_takeoff_points_features_combobox()
         # self.takeoff_point_ComboBox.setLayer(self.takeoff_point_layer_ComboBox.currentLayer())
+        # print('current layer', self.takeoff_point_layer_ComboBox.currentLayer())
 
         # connect signals
         # self.takeoff_point_layer_ComboBox.layerChanged.connect(
         #     lambda: self.takeoff_point_ComboBox.setLayer(self.takeoff_point_layer_ComboBox.currentLayer()))
-        self.takeoff_point_ComboBox.layerChanged.connect(self.update_takeoff_points_features_combobox)
+        self.takeoff_point_layer_ComboBox.layerChanged.connect(self.update_takeoff_points_features_combobox)
         self.pushButton_generate_routes.clicked.connect(self.generate_button_handler)
 
         # load config
@@ -70,7 +71,9 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
 
     def update_takeoff_points_features_combobox(self):
         self.takeoff_point_ComboBox.setLayer(self.takeoff_point_layer_ComboBox.currentLayer())
-        if self.takeoff_point_layer_ComboBox.currentLayer().featureCount() == 0:
+        print('current layer', self.takeoff_point_layer_ComboBox.currentLayer())
+        if ((self.takeoff_point_layer_ComboBox.currentLayer() is None) or
+                (self.takeoff_point_layer_ComboBox.currentLayer().featureCount() == 0)):
             self.TO_feature_Label.setPixmap(QPixmap(":/plugins/RousettusTool/resources/warning.png"))
             self.TO_feature_Label.setToolTip(
                 "There is no takeoff points. Add points to layer manually oк from other layer")
@@ -222,9 +225,10 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
                       str(self.lineEdit.text()))
             self.config[self.section_name]['distance_limit'] = str(self.survey_dist_spinBox.value())
             self.config[self.section_name]['service_route_limit'] = str(self.service_dist_spinBox.value())
-            self.config[self.section_name]['initial_profiles_layer'] = str(
-                self.profiles_mMapLayerComboBox.currentLayer().name() if
-                self.profiles_mMapLayerComboBox.currentLayer().isValid() else None)
+            self.config[self.section_name]['initial_profiles_layer'] = str(None if
+                                            self.profiles_mMapLayerComboBox.currentLayer() is None else
+                                            self.profiles_mMapLayerComboBox.currentLayer().name() if
+                                            self.profiles_mMapLayerComboBox.currentLayer().isValid() else None)
             # self.config[self.section_name]['takeoff_points_layer'] = str(
             #     self.takeoff_point_layer_ComboBox.currentLayer().name() if
             #     self.takeoff_point_layer_ComboBox.currentLayer().isValid() else None)
