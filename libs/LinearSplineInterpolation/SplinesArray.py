@@ -1,5 +1,6 @@
 #FIXME Сделать обработку ситуации, когда магнитка есть, а вариаций нет.
 import datetime
+from typing import Tuple
 
 from .LinearSpline import LinearSpline
 
@@ -21,7 +22,7 @@ class SplinesArray:
         self.cached_last_spline = None
 
     # Подает на вход список кортежей (x, y), например (time, value)
-    def add_spline(self, table):
+    def add_spline(self, table: Tuple[float, float]):
         #print("enter_add spline table = {}".format(table))
         inserted = 0
         spline = LinearSpline(table)
@@ -61,10 +62,15 @@ class SplinesArray:
     def get_value(self, argument):
         #print('got argument {}'.format(argument))
         if self.cached_last_spline is not None:
-            #print('cached spline left: {}, right: {}'.format(self.cached_last_spline.get_spline_domain()[0], self.cached_last_spline.get_spline_domain()[1]))
-            if self.cached_last_spline.get_spline_domain()[0] <= argument <= self.cached_last_spline.get_spline_domain()[1]:
-                value = self.cached_last_spline.get_value(argument)
-                return value
+            try:
+
+            # print('cached spline left: {}, right: {}'.format(self.cached_last_spline.get_spline_domain()[0], self.cached_last_spline.get_spline_domain()[1]))
+                if self.cached_last_spline.get_spline_domain()[0] <= argument <= self.cached_last_spline.get_spline_domain()[1]:
+                    value = self.cached_last_spline.get_value(argument)
+                    return value
+            except TypeError:
+                print("Spline.getValue, argument: ", argument, type(argument))
+
         if self.left_border <= argument <= self.right_border:
             for spline in self.spline_array:
                 if spline.get_spline_domain()[0] <= argument <= spline.get_spline_domain()[1]:

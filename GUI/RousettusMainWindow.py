@@ -1,10 +1,7 @@
-import logging
 import os
-import re
 import configparser
 
-import qgis.core
-from qgis.PyQt.QtWidgets import QMainWindow, QDialog, QWidget
+from qgis.PyQt.QtWidgets import QMainWindow, QWidget
 from qgis.core import *
 from qgis.core import QgsProject
 from qgis.core import QgsMessageLog
@@ -12,14 +9,13 @@ from qgis.core import QgsMessageLog
 from ..UI.mainWindow_ui import Ui_MainWindow
 from ..GUI.DataProcessing.VariationCalculateHandle import VariationCalculateHandle
 from ..GUI.FlightPlanning.ProfileGenerateHandle import ProfileGenerateHandle
-from ..GUI.FlightPlanning.FlighfPlanningHandle import FlightPlanningHandle
-from ..GUI.FlightPlanning.FlightPlanningTestHandle import FlightPlanningTestHandle
+# from ..GUI.FlightPlanning.FlighfPlanningHandle import FlightPlanningHandle
+from ..GUI.FlightPlanning.FlightPlanningRenewHandle import FlightPlanningHandle
 from ..GUI.FlightPlanning.RoutePlanHandle import RoutePlanHandle
-from ..tools.ServiceClasses.get_current_project_name import get_current_project_name
+from ..tools.get_current_project_name import get_current_project_name
 from ..tools.ServiceClasses.LoggerQgis import LoggerQgis
 from ..GUI.Help.AboutHandle import AboutHandle
 from ..tools.Configurable import Configurable
-from PyQt5.QtCore import Qt
 
 
 class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
@@ -181,6 +177,29 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow, Configurable):
             self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'Profile Generate'))
             # TODO Не работает активация таба, починить. Find child возвращает 0
             print(self.tabWidget.findChild(QWidget, 'Profile Generate'))
+
+    def add_tab(self, tab_class, tab_name):
+        section_name = tab_class.section_name
+        if self.debug:
+            print("current tab_exist_flags = {}".format(self.tab_exist_flags))
+        if self.tab_exist_flags.get(section_name, 0):
+            for i in range(self.tabWidget.count()):
+                if self.tabWidget.widget(i).section_name == tab_class.section_name:
+                    self.tabWidget.setCurrentWidget(self.tabWidget.setCurrentIndex(i))
+                    break
+        else:
+            tab_widget = tab_class(main_window=self)
+            if isinstance(tab_widget, Configurable):
+                self.add_saving_children(tab_widget.get_config())
+            self.tabWidget.addTab(tab_widget, tab_name)
+            self.tab_exist_flags[section_name] = 1
+            self.tabWidget.setCurrentWidget(tab_widget)
+            if 'TABS' not in self.config.keys():
+                self.config['TABS'] = {}
+            if section_name not in self.config['TABS'].keys():
+                self.config['TABS'][section_name] = {}
+            if section_name:
+                self.config['TABS'][section_name]['is_open'] = True
 
     def closeTab(self, currentIndex):
         if self.debug:

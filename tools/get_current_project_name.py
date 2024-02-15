@@ -20,8 +20,8 @@ def get_current_project_name():
             pass
     else:
         prj_name = os.path.basename(QgsProject.instance().fileName()).split('.')[0]
-    if QgsProject.instance().readPath("./") != './':
-        current_project_path = QgsProject.instance().readPath("./").replace('/', '\\')
+    if QgsProject.instance().readPath(QgsProject.instance().fileName()) != './':
+        current_project_path = QgsProject.instance().readPath(QgsProject.instance().fileName()).replace('/', '\\')
 
 
 

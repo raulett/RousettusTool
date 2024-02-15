@@ -5,6 +5,12 @@
     <qresource prefix="/plugins/RousettusTool" >
         <file>resources/warning.png</file>
     </qresource>
+    <qresource prefix="/plugins/RousettusTool" >
+        <file>resources/yes36.png</file>
+    </qresource>
+    <qresource prefix="/plugins/RousettusTool" >
+        <file>resources/time36.png</file>
+    </qresource>
     <resources>
         <include location="plugins/RousettusTool/libs/LinearSplineInterpolation"/>
     </resources>

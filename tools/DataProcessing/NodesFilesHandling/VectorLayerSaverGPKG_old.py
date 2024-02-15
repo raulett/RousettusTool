@@ -1,6 +1,6 @@
 import os
-from qgis.core import QgsProject, QgsVectorLayer, QgsVectorFileWriter, Qgis, QgsLayerTreeGroup, QgsLayerTreeLayer, \
-    QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsLineSymbol, QgsArrowSymbolLayer
+from qgis.core import QgsProject, QgsVectorLayer, QgsVectorFileWriter, QgsLayerTreeGroup, QgsLayerTreeLayer, \
+    QgsRendererCategory, QgsLineSymbol, QgsArrowSymbolLayer
 from typing import Dict
 from PyQt5.QtGui import QColor
 import random
@@ -90,7 +90,11 @@ class VectorLayerSaverGPKG:
         self.layer_filepath = os.sep.join(['flights', method_name, 'flight_routes.gpkg'])
         return self.layer_filepath
 
-    # Qgis groupe hierarchy environment
+    def get_flight_plans_filepath(self, method_name: str):
+        self.layer_filepath = os.sep.join(['flights', method_name, 'flight_plans.gpkg'])
+        return self.layer_filepath
+
+    # Qgis group hierarchy environment
     def get_takeoff_points_group(self):
         self.layer_group_path = {'groups': ['flights'], 'layer_name': 'takeoff_points'}
         return self.layer_group_path
@@ -101,6 +105,10 @@ class VectorLayerSaverGPKG:
 
     def get_flight_routes_group(self, method_name: str) -> Dict:
         self.layer_group_path = {'groups': ['flights', method_name, 'routes'], 'layer_name': 'routes'}
+        return self.layer_group_path
+
+    def get_flight_planes_group(self, method_name: str) -> Dict:
+        self.layer_group_path = {'groups': ['flights', method_name, 'flight_plans'], 'layer_name': 'flights'}
         return self.layer_group_path
 
     def set_style_to_profiles_layer(self, layer: QgsVectorLayer, plugin_path: str):

@@ -4,7 +4,7 @@ from typing import List
 from ...tools.Configurable import Configurable
 from ...UI.FlightPlanning.RoutePlan_ui import Ui_RoutePlan_form
 from ..InterfaceCustumClasses.SurveyMethodCombobox import SurveyMethodCombobox
-from ...tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG import VectorLayerSaverGPKG
+from ...tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG_old import VectorLayerSaverGPKG
 from ...tools.DataModels.Flight_planning.generate_takeoff_points_layer import generate_takeoff_points_layer
 from ...tools.FlightPlanningLib.QThreadFlightRouteGenerator import QThreadFlightRouteGenerator
 from ...tools.FlightPlanningLib.RoutePlanner import RoutePlanner

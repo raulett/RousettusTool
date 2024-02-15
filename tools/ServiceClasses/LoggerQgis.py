@@ -2,7 +2,7 @@ import os.path
 import datetime
 
 from qgis.core import QgsMessageLog
-from .get_current_project_name import get_current_project_name
+from ...tools.get_current_project_name import get_current_project_name
 from qgis.core import Qgis
 
 # Massege levels:

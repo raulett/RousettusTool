@@ -4,11 +4,10 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import Qt
 
 from qgis.core import QgsMapLayerProxyModel, QgsCoordinateReferenceSystem, QgsCoordinateTransform, \
-    QgsProject, QgsPointXY, QgsGeometry
-from ...tools.ServiceClasses.get_current_project_name import get_current_project_name
+    QgsProject
+from tools.get_current_project_name import get_current_project_name
 
 from ...tools.Configurable import Configurable
-from ...tools.FlightPlanningLib.FlightPlan import FlightPlan
 from ...tools.FlightPlanningLib.FlightPlanner import FlightPlanner
 
 import matplotlib as mpl
@@ -55,12 +54,6 @@ class FlightPlanningHandle(Ui_FlightPlan_form, QDialog, Configurable):
                   ", type: ", type(self.down_deviation_spinbox.value()))
             start_time = time.time()
         self.takeoff_point_altitude = self.takeoff_point_alt_spinBox.value()
-        # self.init_flight_btn_pushed()
-        # print('Currebt combobox_func_ index', self.comboBox_function.currentIndex())
-        # if self.comboBox_function.currentIndex() == 0:
-        #     self.flight_planner.make_flight_plan()
-        # else:
-        #     self.flight_planner.make_regular_flight_plan(self.spinBox.value())
         self.flight_planner = FlightPlanner(self.mFeatureListComboBox.feature(),
                                             self.profiles_mMapLayerComboBox.currentLayer().crs(),
                                             self.DEM_mMapLayerComboBox.currentLayer(),

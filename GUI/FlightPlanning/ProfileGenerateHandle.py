@@ -14,7 +14,7 @@ from qgis.utils import iface
 import os, statistics
 
 from ...tools.Configurable import Configurable
-from ...tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG import VectorLayerSaverGPKG
+from ...tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG_old import VectorLayerSaverGPKG
 
 
 class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):

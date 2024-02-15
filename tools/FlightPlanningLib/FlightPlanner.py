@@ -15,19 +15,36 @@ from typing import List, Tuple, Dict
 class FlightPlanner(QThread):
     # multiline is list of tuples, represents points of multiline,
     # crs is str value, represents coordinate system in 'EPSG:X' format
-    init_debug = 1
-    general_algorithm_debug = 1
+    init_debug = 0
+    general_algorithm_debug = 0
 
     def __init__(self, line_string: QgsFeature,
                  crs: QgsCoordinateReferenceSystem,
                  dem_layer: QgsRasterLayer,
                  dem_layer_band: int,
-                 flight_altitude: int,
+                 flight_altitude: float,
                  up_deviation: float,
                  down_deviation: float,
                  takeoff_and_landing_point_altitude: float,
                  regular_points_dist: int = None,
                  alt_above_takeoff_point: int = None):
+        '''
+
+        :param line_string:
+        :param crs:
+        :param dem_layer:
+        :param dem_layer_band:
+        :param flight_altitude:
+        :param up_deviation:
+        :param down_deviation: should be < 0
+        :param takeoff_and_landing_point_altitude:
+        :param regular_points_dist:
+        :param alt_above_takeoff_point:
+        '''
+        # print(f'flight_planner.init: \n'
+        #       f'dem layer: {dem_layer.name()},\n dem_layer_band: {dem_layer_band},\n'
+        #       f'flight alt: {flight_altitude},\n up_deviation: {up_deviation},\n down_deviation: {down_deviation}\n'
+        #       f'takeoff point alt: {takeoff_and_landing_point_altitude}\n')
         if self.init_debug:
             print("\n===begin init===")
             print("input line string: ", line_string)
@@ -35,7 +52,7 @@ class FlightPlanner(QThread):
         self.input_route_feature = line_string
         self.alt_above_takeoff_point = alt_above_takeoff_point
         self.takeoff_and_landing_point_altitude = takeoff_and_landing_point_altitude
-        self.alt_deviation_limit = (up_deviation, down_deviation)
+        self.alt_deviation_limit = (up_deviation, down_deviation if down_deviation < 0 else -1 * down_deviation)
         self.flight_alt_agl = flight_altitude
         self.service_flight_flags_list = None
         self.dem_layer = dem_layer.clone()
@@ -74,6 +91,7 @@ class FlightPlanner(QThread):
         self.flight_feats_fields.append(QgsField('alt_asl', QVariant.Double))
         self.flight_feats_fields.append(QgsField('distance', QVariant.Double))
         self.flight_feats_fields.append(QgsField('route_name', QVariant.String))
+        self.flight_feats_fields.append(QgsField('is_service', QVariant.Int))
         if self.init_debug:
             print("===end init===\n")
 
@@ -83,7 +101,7 @@ class FlightPlanner(QThread):
         self.make_dist_to_x_func().make_dist_to_y_func()
         self.init_altitude_points(self.dem_layer, self.dem_layer_band)
         if self.general_algorithm_debug:
-            print("dist alt function: ", self.alt_points)
+            print("dist alt function: ")
         self.make_dist_to_ground_alt_function()
         self.make_initial_flight_plan()
         self.make_flight_plan()
@@ -279,7 +297,6 @@ class FlightPlanner(QThread):
         self.flight_points = new_flight_plan
 
     def make_flight_plan(self):
-        # print('call make flight plan')
         all_prepared_flag = 0
         while all_prepared_flag == 0:
             all_prepared_flag = 1
@@ -289,14 +306,7 @@ class FlightPlanner(QThread):
                     all_prepared_flag = 0
                     self.flight_points[i - 1: i + 1] = self.add_mid_flight_point_alternative(self.flight_points[i - 1],
                                                                                              self.flight_points[i])
-                    # print('New points: ', self.flight_points[i - 1], '; ', self.flight_points[i])
-                    # print('Renew flight points count', len(self.flight_points))
-                    # time.sleep(1)
                     break
-            # print('all prepared flag: ', all_prepared_flag)
-            # print('flight points: ', [(i, point['distance'], point['gnd_alt']) for i, point in
-            #                                enumerate(self.get_flight_points())])
-        # print('make flight plan, finish while')
         return self
 
     def add_mid_flight_point_alternative(self, first_f_point: Dict, sec_f_point: Dict):
@@ -317,6 +327,10 @@ class FlightPlanner(QThread):
                 max_down_deviation_value = current_deviation
                 max_down_deviation_point_distance = current_distance
             current_distance = current_distance + d_distance
+        # print('FlightPlanner.add_mid_flight_point_alt, max_down_dev_val: ',
+        #       max_down_deviation_value, type(max_down_deviation_value))
+        # print('FlightPlanner.add_mid_flight_point_alt, max_down_dev_val: ',
+        #       self.alt_deviation_limit[1], type(self.alt_deviation_limit[1]))
         if (max_down_deviation_value < self.alt_deviation_limit[1]) and max_down_deviation_value is not None:
             flight_g_alt = self.get_altitude(max_down_deviation_point_distance)
             k_alt_coef, b_alt_coef = generate_linear_by_two_points((first_f_point['distance'],
@@ -463,6 +477,7 @@ class FlightPlanner(QThread):
             feat.setAttribute('alt_asl', flight_point['gnd_alt'] + flight_point['flight_alt'])
             feat.setAttribute('distance', flight_point['distance'])
             feat.setAttribute('route_name', self.input_route_feature.attribute('name'))
+            feat.setAttribute('is_service', flight_point['is_service_flag'])
             fid_num += 1
             flight_feature_list.append(feat)
         return flight_feature_list
@@ -511,3 +526,6 @@ class FlightPlanner(QThread):
         result['tot_climb'] = tot_climb
         result['tot_desc'] = tot_desc
         return result
+
+    def get_route_feature(self):
+        return self.input_route_feature

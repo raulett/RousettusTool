@@ -96,6 +96,7 @@ class RoutePlanner:
         self.planned_routes_fields.append(QgsField('service', QVariant.String))
         self.planned_routes_fields.append(QgsField('length', QVariant.Double))
         self.planned_routes_fields.append(QgsField('profiles', QVariant.String))
+        self.planned_routes_fields.append(QgsField('to_point', QVariant.String))
         if self.init_debug:
             print("====end init======\n")
 
