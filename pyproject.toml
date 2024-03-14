@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "RousettusTool"
+version = "0.1.0"
+description = ""
+authors = ["raulett <raulett@gmail.com>"]
+readme = "README.MD"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+qgis-stubs = ">=0"
+PyQt5-Qt = "5.15.2"
+pyqt5 = "5.15.2"
+matplotlib = ">=0"
+pydantic = "2.6.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

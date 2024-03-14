@@ -3,7 +3,7 @@ import re
 import os
 
 
-#функционал для получения текущего имени проекта и пути к нему
+# функционал для получения текущего имени проекта и пути к нему
 def get_current_project_name():
     current_project_path = ''
     prj_full_path = ''
@@ -21,9 +21,6 @@ def get_current_project_name():
     else:
         prj_name = os.path.basename(QgsProject.instance().fileName()).split('.')[0]
     if QgsProject.instance().readPath(QgsProject.instance().fileName()) != './':
-        current_project_path = QgsProject.instance().readPath(QgsProject.instance().fileName()).replace('/', '\\')
-
-
+        current_project_path = os.path.dirname(QgsProject.instance().readPath(QgsProject.instance().fileName()))
 
     return prj_name, current_project_path, prj_full_path
-

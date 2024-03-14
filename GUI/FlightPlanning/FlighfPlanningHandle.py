@@ -1,19 +1,20 @@
-from ...UI.FlightPlanning.FlightPlan_ui import Ui_FlightPlan_form
-from qgis.PyQt.QtWidgets import QDialog
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import Qt
+import time
 
 from qgis.core import QgsMapLayerProxyModel, QgsCoordinateReferenceSystem, QgsCoordinateTransform, \
     QgsProject
-from tools.get_current_project_name import get_current_project_name
-
-from ...tools.Configurable import Configurable
-from ...tools.FlightPlanningLib.FlightPlanner import FlightPlanner
-
+from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import Qt
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 
-import time
+
+from tools.get_current_project_name import get_current_project_name
+from ...UI.FlightPlanning.FlightPlan_ui import Ui_FlightPlan_form
+from ...tools.Configurable import Configurable
+from ...tools.FlightPlanningLib.FlightPlanner import FlightPlanner
+
+
 
 
 # TODO сдедать проверку, что маршрут полностью закрыт демкой

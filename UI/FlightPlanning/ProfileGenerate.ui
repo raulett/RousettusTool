@@ -382,7 +382,7 @@
          <number>10</number>
         </property>
         <property name="horizontalSpacing">
-         <number>6</number>
+         <number>4</number>
         </property>
         <property name="verticalSpacing">
          <number>9</number>

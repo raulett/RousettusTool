@@ -1,22 +1,18 @@
 import re
 from typing import List
-
-from ...tools.Configurable import Configurable
-from ...UI.FlightPlanning.RoutePlan_ui import Ui_RoutePlan_form
-from ..InterfaceCustumClasses.SurveyMethodCombobox import SurveyMethodCombobox
-from ...tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG_old import VectorLayerSaverGPKG
-from ...tools.DataModels.Flight_planning.generate_takeoff_points_layer import generate_takeoff_points_layer
-from ...tools.FlightPlanningLib.QThreadFlightRouteGenerator import QThreadFlightRouteGenerator
-from ...tools.FlightPlanningLib.RoutePlanner import RoutePlanner
+import os
 
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtCore import QSize, Qt, QRegExp, QVariant
 from PyQt5.QtGui import QValidator, QRegExpValidator, QPixmap
-
-import os
-
 from qgis.core import QgsMapLayerProxyModel, QgsVectorLayer, QgsCoordinateReferenceSystem, \
     QgsProject, QgsWkbTypes, QgsFields, QgsField, QgsFeature
+
+from tools.Configurable import Configurable
+from UI.FlightPlanning.RoutePlan_ui import Ui_RoutePlan_form
+from GUI.InterfaceCustumClasses.SurveyMethodCombobox import SurveyMethodCombobox
+from tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG_old import VectorLayerSaverGPKG
+from tools.FlightPlanningLib.RoutePlanner import RoutePlanner
 
 
 class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
@@ -121,7 +117,7 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
                                                                                 out_of_plan_profiles_layer)
         self.vector_layer_saver.add_layer_to_group(output_profiles_gpkg_layer, output_profiles_group_node)
         self.vector_layer_saver.set_style_to_profiles_layer(output_profiles_gpkg_layer, self.main_window.plugin_path)
-        source_layer_node = QgsProject.instance().layerTreeRoot().\
+        source_layer_node = QgsProject.instance().layerTreeRoot(). \
             findLayer(self.profiles_mMapLayerComboBox.currentLayer())
         if source_layer_node:
             source_layer_node.setItemVisibilityChecked(False)
@@ -144,8 +140,8 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
         self.vector_layer_saver.set_style_to_routes_layer(output_routes_gpkg_layer, self.main_window.plugin_path)
 
     def pack_lines_to_layer(self, line_features: List[QgsFeature],
-                      layer_name: str,
-                      layer_crs: QgsCoordinateReferenceSystem):
+                            layer_name: str,
+                            layer_crs: QgsCoordinateReferenceSystem):
         '''
         Служебная функция, для упаковки списка профилей и маршрутов в слой типа LineString.
         :param line_features:
@@ -175,7 +171,6 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
             return grandparent.name()
         else:
             return 'unknown'
-
 
     def load_config(self):
         if self.config is not None:
@@ -226,9 +221,9 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
             self.config[self.section_name]['distance_limit'] = str(self.survey_dist_spinBox.value())
             self.config[self.section_name]['service_route_limit'] = str(self.service_dist_spinBox.value())
             self.config[self.section_name]['initial_profiles_layer'] = str(None if
-                                            self.profiles_mMapLayerComboBox.currentLayer() is None else
-                                            self.profiles_mMapLayerComboBox.currentLayer().name() if
-                                            self.profiles_mMapLayerComboBox.currentLayer().isValid() else None)
+                                                                           self.profiles_mMapLayerComboBox.currentLayer() is None else
+                                                                           self.profiles_mMapLayerComboBox.currentLayer().name() if
+                                                                           self.profiles_mMapLayerComboBox.currentLayer().isValid() else None)
             # self.config[self.section_name]['takeoff_points_layer'] = str(
             #     self.takeoff_point_layer_ComboBox.currentLayer().name() if
             #     self.takeoff_point_layer_ComboBox.currentLayer().isValid() else None)

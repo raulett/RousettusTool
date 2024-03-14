@@ -12,6 +12,9 @@
         git sha              : $Format:%H$
 
 """
+import os
+import pathlib
+import sys
 
 
 def classFactory(iface):  # pylint: disable=invalid-name
@@ -20,5 +23,13 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    from .rousettus import RousettusMain
+    os.environ["ROUSETTUS_ROOT"] = str(pathlib.Path(__file__).parent.absolute())
+    sys.path.append(os.environ.get("ROUSETTUS_ROOT"))
+    try:
+        from .rousettus import RousettusMain
+    except Exception as e:
+        print('init exception')
+        sys.path.remove(os.environ.get("ROUSETTUS_ROOT"))
+        os.environ.pop("ROUSETTUS_ROOT")
+        raise e
     return RousettusMain(iface)

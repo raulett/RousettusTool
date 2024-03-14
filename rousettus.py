@@ -21,20 +21,23 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+import os.path
+import pathlib
+import sys
+
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QAction
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
-from .GUI.RousettusMainWindow import RousettusMainWindow
-import os.path
+from GUI.RousettusMainWindow import RousettusMainWindow
+from tools.AppSettings import AppSettings
 
 
 class RousettusMain:
     """QGIS Plugin Implementation."""
-
+    PLUGIN_NAME = 'RousettusTool'
 
     def __init__(self, iface):
         """Constructor.
@@ -45,26 +48,9 @@ class RousettusMain:
         :type iface: QgsInterface
         """
 
-        """Enable tools flags"""
-        self.enable_tools_flags = {
-            'data processing': (True,
-                {
-                    'gamma data': (True,
-                    {
-                        'import data': (True,
-                            {
-                                'CSV gamma': (True, None)
-                            })
-                    }),
-                    'magnetic data': (True,
-                    {
-                        'variation calculate': (True, None)
-                    })
-            })
-        }
-
         # Save reference to the QGIS interface
         # os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+        self.mainWindow = None
         self.iface = iface
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -76,19 +62,20 @@ class RousettusMain:
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
+        self.first_start = True
+        self.settings = AppSettings.get_settings()
 
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -165,7 +152,6 @@ class RousettusMain:
         # will be set False in run()
         self.first_start = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -173,28 +159,28 @@ class RousettusMain:
                 u'&Rousettus',
                 action)
             self.iface.removeToolBarIcon(action)
-
+        remove_envs()
+        for key in [key for key in sys.modules.keys() if "RousettusTool" in key][::-1]:
+            del sys.modules[key]
+        self = None
 
     def run(self):
         """Run method that performs all the real work"""
-
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        print ('rousettus.py run call')
         if self.first_start == True:
             self.first_start = False
-            self.mainWindow = RousettusMainWindow(self.enable_tools_flags)
-
-        print('rousettus.py if self.first_start == True: call')
-
-
-        # show the dialog
+            try:
+                self.mainWindow = RousettusMainWindow()
+            except Exception as e:
+                remove_envs()
+                raise e
         self.mainWindow.show()
-        # Run the dialog event loop
-        # result = self.mainWindow.exec()
-        # See if OK was pressed
-        # if result:
-        #     # Do something useful here - delete the line containing pass and
-        #     # substitute with your code.
-        #     pass
 
+
+def remove_envs():
+    try:
+        sys.path.remove(os.environ.get("ROUSETTUS_ROOT"))
+    except ValueError:
+        pass
+    os.environ.pop("ROUSETTUS_ROOT")

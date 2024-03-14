@@ -1,7 +1,8 @@
-from qgis.PyQt.QtWidgets import QDialog
-from ...UI.FlightPlanning.ProfileGenerate_ui import Ui_ProfileGenerateWiget
-from .GetLineTool import GetLineTool
-from ...tools.DataProcessing.GeometryHandling.AffineTransform import AffilneTransform
+import os
+import statistics
+
+from PyQt5.QtWidgets import QDialog
+
 
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QVariant, Qt
@@ -11,23 +12,21 @@ from qgis.core import Qgis, QgsMapLayerProxyModel, QgsVectorLayer, QgsFeature, Q
     QgsGeometry, QgsPoint, QgsLineString, QgsField, QgsFields, QgsCoordinateReferenceSystem
 from qgis.gui import QgisInterface
 from qgis.utils import iface
-import os, statistics
 
-from ...tools.Configurable import Configurable
-from ...tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG_old import VectorLayerSaverGPKG
+from tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG_old import VectorLayerSaverGPKG
+from UI.FlightPlanning.ProfileGenerate_ui import Ui_ProfileGenerateWiget
+from .GetLineTool import GetLineTool
+from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
 
-
-class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
+class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog):
     debug = 1
 
-    def __init__(self, progressBar=None, logger=None, main_window=None, parent=None, config=None):
+    def __init__(self, progressBar=None, logger=None, main_window=None, parent=None):
         super(ProfileGenerateHandle, self).__init__(parent)
-        super(Configurable, self).__init__()
         self.module_tag = 'Profile generate handler'
         self.setupUi(self)
         self.progressBar = progressBar
         self.main_window = main_window
-        self.logger = logger
         self.canvas = None
         self.current_tool = None
         self.profile_fields = QgsFields()
@@ -35,7 +34,6 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         self.profile_fields.append(QgsField('azimuth', QVariant.Double))
         self.profile_fields.append(QgsField('pr_dist', QVariant.Int))
 
-        self.set_config(config)
         self.section_name = 'profile_generate'
 
         # connect signals
@@ -44,15 +42,12 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
         self.mMapLayerComboBox.layerChanged.connect(self.mMapLayerComboBox_update_layer_handler)
         self.load_config()
         self.initGui()
+        self.logger = RousettusLoggerHandler.get_handler().logger
 
 
 
     def initGui(self):
         self.mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
-        try:
-            self.lineEdit_projectName.setText(str(self.main_window.profiles_save_path))
-        except Exception as e:
-            self.logger.log_msg("no project name from main window. {}".format(e), self.module_tag, Qgis.Warning)
         self.mMapLayerComboBox_update_layer_handler()
         self.update_polygon_features_combobox()
 
@@ -260,44 +255,8 @@ class ProfileGenerateHandle(Ui_ProfileGenerateWiget, QDialog, Configurable):
 
     # load config function
     def load_config(self):
-        if self.section_name in self.config:
-            if 'azimuth' in self.config[self.section_name]:
-                self.spinBox_azimuth.setValue(self.config[self.section_name].getfloat('azimuth'))
-            if 'min_profile_len' in self.config[self.section_name]:
-                self.spinBox_profile_len.setValue(self.config[self.section_name].getint('min_profile_len'))
-            if 'borders_overlap' in self.config[self.section_name]:
-                self.spinBox_Overlap_borders.setValue(self.config[self.section_name].getint('borders_overlap'))
-            if 'first_prof_num' in self.config[self.section_name]:
-                self.spinBox_first_num.setValue(self.config[self.section_name].getint('first_prof_num'))
-            if 'prof_distance' in self.config[self.section_name]:
-                self.profile_distance_spinBox.setValue(self.config[self.section_name].getint('prof_distance'))
-            if 'prof_layer_name' in self.config[self.section_name]:
-                layer_name = self.config[self.section_name].get('input_polygon_layer')
-                item_index = self.mMapLayerComboBox.findText(layer_name, flags=Qt.MatchFixedString)
-                if self.debug:
-                    print('match exactly ', item_index, 'Layer name: ',
-                          self.config[self.section_name].get('input_polygon_layer'))
-                if item_index >= 0:
-                    self.mMapLayerComboBox.setCurrentIndex(item_index)
-                if 'input_polygon' in self.config[self.section_name]:
-                    input_polygon = self.config[self.section_name].getint('input_polygon')
-                    try:
-                        self.mFeaturePickerWidget.setFeature(input_polygon)
-                    except:
-                        pass
-            if 'prof_layer_name' in self.config[self.section_name]:
-                self.lineEdit_profiles_name.setText(self.config[self.section_name].get('prof_layer_name'))
+        pass
 
     # store config
     def store_config(self):
-        if self.config is not None:
-            if self.section_name not in self.config:
-                self.config[self.section_name] = {}
-            self.config[self.section_name]['azimuth'] = str(self.spinBox_azimuth.value())
-            self.config[self.section_name]['min_profile_len'] = str(self.spinBox_profile_len.value())
-            self.config[self.section_name]['borders_overlap'] = str(self.spinBox_Overlap_borders.value())
-            self.config[self.section_name]['first_prof_num'] = str(self.spinBox_first_num.value())
-            self.config[self.section_name]['prof_distance'] = str(self.profile_distance_spinBox.value())
-            self.config[self.section_name]['prof_layer_name'] = str(self.lineEdit_profiles_name.text())
-            self.config[self.section_name]['input_polygon_layer'] = str(self.mMapLayerComboBox.currentText())
-            self.config[self.section_name]['input_polygon'] = str(self.mFeaturePickerWidget.feature().id())
+        pass

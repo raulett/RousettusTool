@@ -1,6 +1,8 @@
-from ...UI.Help.AboutWindow_ui import Ui_DialogAbout
-from qgis.PyQt.QtWidgets import QDialog
 import os
+
+from PyQt5.QtWidgets import QDialog
+
+from UI.Help.AboutWindow_ui import Ui_DialogAbout
 
 
 class AboutHandle(Ui_DialogAbout, QDialog):

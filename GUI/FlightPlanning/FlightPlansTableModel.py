@@ -1,3 +1,4 @@
+import logging
 import multiprocessing
 from typing import Any, List
 import re
@@ -6,9 +7,9 @@ from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant, QMutex
 from PyQt5.QtGui import QIcon
 from qgis.core import QgsFeature, QgsField, QgsVectorLayer, QgsFields, QgsGeometry, QgsRasterLayer, QgsPoint
 
-from .FlightPlannerWorker import FlightPlannerWorker
-from .FlightPlanFeatureFabric import FlightPlanFeatureFabric
-from ...tools.FlightPlanningLib.FlightPlanner import FlightPlanner
+from GUI.FlightPlanning.FlightPlannerWorker import FlightPlannerWorker
+from GUI.FlightPlanning.FlightPlanFeatureFabric import FlightPlanFeatureFabric
+from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
 
 
 class FlightPlansTableModel(QAbstractTableModel):
@@ -48,6 +49,7 @@ class FlightPlansTableModel(QAbstractTableModel):
         self._layer_add_mutex = QMutex()
         self._headers = ['Process', 'Name', 'p_num']
         self._thread_num = multiprocessing.cpu_count() - 2 if multiprocessing.cpu_count() > 2 else 1
+        self.logger = RousettusLoggerHandler.get_handler().logger
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._data)
@@ -104,7 +106,7 @@ class FlightPlansTableModel(QAbstractTableModel):
                 self._planning_queue.append(route_feature.get('route_feature'))
         self._planning_mutex.unlock()
         self._thread_count = min(len(self._planning_queue), self._thread_num)
-        print('Thread count: ', self._thread_count)
+        logging.debug(f'Thread count: {self._thread_count}')
         while self._thread_count > 0:
             print('Thread count in while: ', self._thread_count)
             print('management_ mutex lock')

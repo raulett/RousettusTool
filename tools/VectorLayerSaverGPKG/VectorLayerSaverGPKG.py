@@ -5,9 +5,11 @@ from qgis.core import QgsProject, QgsLayerTreeGroup, QgsVectorLayer, QgsVectorFi
 
 
 class VectorLayerSaverGPKG:
-
+    """
+вспомогательный класс для создания и управления векторным слоем для профилей, маршрутов и полетов.
+    """
     def __init__(self, main_window, group_path: List[str],
-                 relative_filepath: List[str], filename: str, vector_layer: QgsVectorLayer):
+                 relative_filepath: List[str], vector_layer: QgsVectorLayer):
         """
         Constructor for the VectorLayerSaverGPKG class.
 
@@ -20,13 +22,11 @@ class VectorLayerSaverGPKG:
         self.group_node = None
         self.layer_group_path = group_path
         self.layer = vector_layer
-        self.layer_filepath = os.path.sep.join([main_window.current_project_path,
-                                                os.path.sep.join(relative_filepath),
-                                                filename])
+        self.layer_filepath = os.path.join([main_window.current_project_path, relative_filepath])
         print("VectorLayerSaverGPKG, self.layer_filepath: ", self.layer_filepath)
         self._init_group_tree()
         self._init_vector_layer()
-        self.add_layer_to_group()
+        self._add_layer_to_group()
 
     def _init_group_tree(self):
         """
@@ -78,7 +78,7 @@ class VectorLayerSaverGPKG:
                 raise IOError('layer {} failed to load'.format(self.layer.name()))
         self.layer = gpkg_layer
 
-    def add_layer_to_group(self):
+    def _add_layer_to_group(self):
         """
         Adds a layer to a layer group in the QGIS project.
 

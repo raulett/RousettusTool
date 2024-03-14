@@ -1,15 +1,13 @@
-from ...tools.FlightPlanningLib.geometry_functions.qgs_get_distance import qgs_get_distance
-from .geometry_functions.generate_linear_by_two_points import generate_linear_by_two_points
-
-from ...libs.LinearSplineInterpolation.SplinesArray import SplinesArray
+from typing import List, Tuple, Dict
+import math
 
 from qgis.core import QgsPointXY, QgsCoordinateReferenceSystem, QgsGeometry, QgsFeature, QgsFields, QgsRasterLayer, \
     QgsField
-import math
-
 from PyQt5.QtCore import QThread, pyqtSignal, QVariant
 
-from typing import List, Tuple, Dict
+from tools.FlightPlanningLib.geometry_functions.qgs_get_distance import qgs_get_distance
+from tools.FlightPlanningLib.geometry_functions.generate_linear_by_two_points import generate_linear_by_two_points
+from libs.LinearSplineInterpolation.SplinesArray import SplinesArray
 
 
 class FlightPlanner(QThread):

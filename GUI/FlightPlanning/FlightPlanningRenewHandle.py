@@ -1,18 +1,19 @@
 from PyQt5.QtCore import QItemSelectionModel, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QTableView
-
-from ...tools import constants
-from ...UI.FlightPlanning.FlightPlan_renew_ui import Ui_FlightPlan_renew_form
-from ...tools.Configurable import Configurable
-from ...tools.VectorLayerSaverGPKG.FlightLayerSaverGPKG import FlightLayerSaverGPKG
-from .LayerListModel import LayerListModel
-from .RouteFeaturesTableModel import RouteFeaturesTableModel
-from .FlightPlansTableModel import FlightPlansTableModel
-from .DemLayersModel import DemLayersModel
-
-from qgis.PyQt.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog
 from qgis.core import QgsLayerTreeGroup, QgsProject, Qgis
+
+from tools import constants
+from UI.FlightPlanning.FlightPlan_renew_ui import Ui_FlightPlan_renew_form
+from tools.Configurable import Configurable
+from tools.VectorLayerSaverGPKG.FlightLayerSaverGPKG import FlightLayerSaverGPKG
+from GUI.FlightPlanning.LayerListModel import LayerListModel
+from GUI.FlightPlanning.RouteFeaturesTableModel import RouteFeaturesTableModel
+from GUI.FlightPlanning.FlightPlansTableModel import FlightPlansTableModel
+from GUI.FlightPlanning.DemLayersModel import DemLayersModel
+
+
 
 
 class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
@@ -24,7 +25,6 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         self.route_layers_model = None
         self.main_window = main_window
         self.section_name = 'flight_plan'
-        self.flight_layer_saver = FlightLayerSaverGPKG(self.main_window)
         self.setupUi(self)
         self.init_signals()
         self.init_gui()
@@ -103,7 +103,6 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         pass
 
     def add_button_handler(self):
-        # print(self.route_feature_table_model.data(row_index, Qt.UserRole))
         self.flight_table_model.add_data(
             [self.route_feature_table_model.data(row_index, Qt.UserRole) for row_index in
              [index for index in self.routes_table_view.selectedIndexes() if index.column() == 0]]

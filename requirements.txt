@@ -1,4 +1,3 @@
 PyQt5
-geopandas
-pandas
+pyqt5-tools
 numpy
