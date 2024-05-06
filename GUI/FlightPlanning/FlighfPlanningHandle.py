@@ -8,18 +8,18 @@ from PyQt5.QtCore import Qt
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 
-
 from tools.get_current_project_name import get_current_project_name
 from ...UI.FlightPlanning.FlightPlan_ui import Ui_FlightPlan_form
 from ...tools.Configurable import Configurable
 from ...tools.FlightPlanningLib.FlightPlanner import FlightPlanner
 
-
-
-
+'''
+DEPRICATED
+'''
 # TODO сдедать проверку, что маршрут полностью закрыт демкой
 class FlightPlanningHandle(Ui_FlightPlan_form, QDialog, Configurable):
     init_flight_btn_pushed_debug = 1
+
     def __init__(self, main_window=None):
         super().__init__()
         self.takeoff_point_altitude = None
@@ -121,7 +121,6 @@ class FlightPlanningHandle(Ui_FlightPlan_form, QDialog, Configurable):
         file.write('\t'.join([str(len(flight_points)), str(0), str(3), str(20), str(0.0), str(0.0),
                               str(0.0), str(0.0), str(0.0), str(0.0), str(0.0), str(1)]))
         file.close()
-
 
     def update_route_features_combobox(self):
         self.mFeatureListComboBox.setLayer(self.profiles_mMapLayerComboBox.currentLayer())

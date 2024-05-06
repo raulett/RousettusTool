@@ -5,6 +5,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 from qgis.core import QgsFeature, QgsCoordinateReferenceSystem, QgsRasterLayer
 
 from tools.FlightPlanningLib.FlightPlanner import FlightPlanner
+from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
 
 
 class FlightPlannerWorker(QThread):
@@ -30,27 +31,37 @@ class FlightPlannerWorker(QThread):
         self.takeoff_point_altitude = takeoff_point_altitude
         self.up_deviation = up_deviation
         self.down_deviation = down_deviation
-        self.logger = logging.getLogger('rousettus')
+        self.logger = RousettusLoggerHandler.get_handler().logger
+        self.logger.debug(f'New worker {self.worker_num} created')
+
 
     def run(self):
         while len(self.queue) > 0:
             self.mutex.lock()
             if len(self.queue) > 0:
-                self.logger.debug(f'Worker {self.worker_num} got route from queue')
+                self.logger.debug(f'Worker {self.worker_num} got route from queue under mutex')
                 route_feature = self.queue.pop(0)
                 self.mutex.unlock()
                 self.logger.debug(f'Worker {self.worker_num} unlocked queue mutex')
             else:
                 self.mutex.unlock()
                 break
-            flight_planner = FlightPlanner(route_feature, self.layer_crs,
-                                           self.dem_layer, 1,
-                                           self.desired_alt, self.up_deviation,
-                                           self.down_deviation, self.takeoff_point_altitude)
-            self.logger.debug(f'Worker {self.worker_num} created Flight PLANNER')
-            flight_planner.general_algorithm()
+            try:
+                flight_planner = FlightPlanner(route_feature, self.layer_crs,
+                                               self.dem_layer, 1,
+                                               self.desired_alt, self.up_deviation,
+                                               self.down_deviation, self.takeoff_point_altitude)
+            except Exception as e:
+                self.logger.warning(f'Worker {self.worker_num} have exception in FlightPlanner init: '
+                                    f'{e.with_traceback()}')
+                raise e
+            self.logger.debug(f'Worker {self.worker_num} created FLIGHT PLANNER instance')
+            try:
+                flight_planner.general_algorithm()
+            except Exception as e:
+                self.logger.debug(f'Worker {self.worker_num} have exception in FlightPlanner.general_algorithm')
+                raise e
             self.logger.debug(f'Worker {self.worker_num} processed general algorithm')
-            print(self.logger)
             self.result_mutex.lock()
             self.result_queue.append(flight_planner)
             self.result_mutex.unlock()

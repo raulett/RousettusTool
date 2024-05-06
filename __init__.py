@@ -28,7 +28,6 @@ def classFactory(iface):  # pylint: disable=invalid-name
     try:
         from .rousettus import RousettusMain
     except Exception as e:
-        print('init exception')
         sys.path.remove(os.environ.get("ROUSETTUS_ROOT"))
         os.environ.pop("ROUSETTUS_ROOT")
         raise e

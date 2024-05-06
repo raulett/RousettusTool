@@ -2,16 +2,20 @@ from PyQt5.QtCore import QItemSelectionModel, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QTableView
 from PyQt5.QtWidgets import QDialog
+
 from qgis.core import QgsLayerTreeGroup, QgsProject, Qgis
 
-from tools import constants
+from GUI.FlightPlanning.PreviewFlightWindowHandle import PreviewFlightWindowHandle
 from UI.FlightPlanning.FlightPlan_renew_ui import Ui_FlightPlan_renew_form
 from tools.Configurable import Configurable
+from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
 from tools.VectorLayerSaverGPKG.FlightLayerSaverGPKG import FlightLayerSaverGPKG
 from GUI.FlightPlanning.LayerListModel import LayerListModel
 from GUI.FlightPlanning.RouteFeaturesTableModel import RouteFeaturesTableModel
 from GUI.FlightPlanning.FlightPlansTableModel import FlightPlansTableModel
 from GUI.FlightPlanning.DemLayersModel import DemLayersModel
+
+from tools import constants
 
 
 
@@ -19,12 +23,14 @@ from GUI.FlightPlanning.DemLayersModel import DemLayersModel
 class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
     def __init__(self, main_window=None):
         super().__init__()
+        self.preview_window = None
         self.raster_layers_model = None
         self.flight_table_model = None
         self.route_feature_table_model = None
         self.route_layers_model = None
         self.main_window = main_window
         self.section_name = 'flight_plan'
+        self.logger = RousettusLoggerHandler.get_handler().logger
         self.setupUi(self)
         self.init_signals()
         self.init_gui()
@@ -38,16 +44,10 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         self.routes_table_view.setSelectionBehavior(QTableView.SelectRows)
         self.init_route_feature_table_model()
         self.flights_tableView.setSelectionBehavior(QTableView.SelectRows)
-
         self.raster_layers_model = DemLayersModel()
         self.dem_layer_combobox.setModel(self.raster_layers_model)
-        self.init_flights_table_model()
         self.init_dem_crs_warning()
-        self.flight_table_model.set_dem_layer(self.dem_layer_combobox.currentData())
-        self.flight_table_model.set_desired_alt(self.f_alt_dspbox.value())
-        self.flight_table_model.set_takeoff_point_alt(self.to_point_alt_dspbox.value())
-        self.flight_table_model.set_down_deviation_alt(self.down_dev_dspbox.value())
-        self.flight_table_model.set_up_deviation_alt(self.up_dev_dspbox.value())
+        self.init_flights_table_model()
 
     def init_signals(self):
         self.routes_only_checkBox.stateChanged.connect(self.init_gui)
@@ -55,6 +55,7 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         self.route_layer_combobox.currentIndexChanged.connect(self.init_route_feature_table_model)
         self.select_all_button.clicked.connect(self.select_all_button_handler)
         self.add_button.clicked.connect(self.add_button_handler)
+        self.rem_button.clicked.connect(self.remove_button_handler)
         self.dem_layer_combobox.currentIndexChanged.connect(self.init_dem_crs_warning)
         self.dem_layer_combobox.currentIndexChanged.connect(
             lambda: self.flight_table_model.set_dem_layer(self.dem_layer_combobox.currentData()))
@@ -66,6 +67,8 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
             lambda: self.flight_table_model.set_down_deviation_alt(self.down_dev_dspbox.value()))
         self.up_dev_dspbox.valueChanged.connect(
             lambda: self.flight_table_model.set_up_deviation_alt(self.up_dev_dspbox.value()))
+        self.previw_btn.clicked.connect(self.preview_button_handler)
+
 
     def init_dem_crs_warning(self):
         layer = self.dem_layer_combobox.currentData()
@@ -98,6 +101,10 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
             self.flight_table_model = FlightPlansTableModel(self.route_feature_table_model.get_layer())
             self.flights_tableView.setModel(self.flight_table_model)
             self.flight_table_model.set_dem_layer(self.dem_layer_combobox.currentData())
+            self.flight_table_model.set_desired_alt(self.f_alt_dspbox.value())
+            self.flight_table_model.set_takeoff_point_alt(self.to_point_alt_dspbox.value())
+            self.flight_table_model.set_down_deviation_alt(self.down_dev_dspbox.value())
+            self.flight_table_model.set_up_deviation_alt(self.up_dev_dspbox.value())
 
     def route_table_selection_handler(self):
         pass
@@ -109,16 +116,23 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         )
 
     def remove_button_handler(self):
-        pass
+        self.flight_table_model.remove_data([index.row() for index in
+                                             self.flights_tableView.selectedIndexes() if index.column() == 0])
 
     def save_button_handler(self):
         pass
 
     def select_all_button_handler(self):
+        self.logger.debug(self.routes_table_view.selectionMode())
         self.routes_table_view.setSelectionMode(QTableView.MultiSelection)
         for i in range(self.route_feature_table_model.rowCount()):
             self.routes_table_view.selectRow(i)
         self.routes_table_view.setSelectionMode(QTableView.SingleSelection)
+        self.routes_table_view.setSelectionBehavior(QTableView.SelectRows)
+
+    def preview_button_handler(self):
+        self.preview_window = PreviewFlightWindowHandle(self.flight_table_model)
+        self.preview_window.show()
 
     def unplan_button_handler(self):
         pass
@@ -130,9 +144,11 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
             find_node = None
             for gr_name in group_path_list:
                 find_node = root.findGroup(gr_name)
-                # print(f'gr_name: {gr_name}, find_node: {find_node}')
                 if find_node is None:
                     return find_node
             return find_node
         else:
             return QgsProject.instance().layerTreeRoot()
+
+    def closeEvent(self, event):
+        self.preview_window = None

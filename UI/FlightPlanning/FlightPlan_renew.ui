@@ -268,6 +268,19 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QLabel" name="warnin_icon">
+             <property name="minimumSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
          <item row="1" column="0">

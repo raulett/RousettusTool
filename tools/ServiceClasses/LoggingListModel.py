@@ -1,8 +1,9 @@
 # coding=utf-8
-from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
+from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, pyqtSignal
 
 
 class LoggingListModel(QAbstractListModel):
+    data_added = pyqtSignal()
     def __init__(self, parent=None):
         super(LoggingListModel, self).__init__(parent)
         self._data = []
@@ -19,3 +20,4 @@ class LoggingListModel(QAbstractListModel):
         self.beginResetModel()
         self._data.append(record)
         self.endResetModel()
+        self.data_added.emit()

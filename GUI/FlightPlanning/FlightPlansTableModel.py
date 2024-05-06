@@ -1,15 +1,17 @@
-import logging
 import multiprocessing
 from typing import Any, List
 import re
 
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant, QMutex
 from PyQt5.QtGui import QIcon
-from qgis.core import QgsFeature, QgsField, QgsVectorLayer, QgsFields, QgsGeometry, QgsRasterLayer, QgsPoint
+from qgis.core import QgsFeature, QgsField, QgsVectorLayer, QgsFields, QgsGeometry, QgsRasterLayer, QgsPoint, \
+    QgsFeatureRequest
 
 from GUI.FlightPlanning.FlightPlannerWorker import FlightPlannerWorker
 from GUI.FlightPlanning.FlightPlanFeatureFabric import FlightPlanFeatureFabric
 from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
+
+
 
 
 class FlightPlansTableModel(QAbstractTableModel):
@@ -97,7 +99,28 @@ class FlightPlansTableModel(QAbstractTableModel):
         self.endResetModel()
         self.start_workers()
 
+    def remove_data(self, removing_feats: List[int]):
+        feat_names = [self._data[index].get('route_feature').attribute('name') for index in removing_feats]
+        temp_data_names_list = [feat.get('route_feature').attribute('name') for feat in self._data]
+        self.beginResetModel()
+        self._temp_flight_layer.startEditing()
+        for name in feat_names:
+            rem_index = temp_data_names_list.index(name)
+            self._data.pop(rem_index)
+            temp_data_names_list.pop(rem_index)
+            request = QgsFeatureRequest().setFilterExpression(f'"name" = \'{name}\'')
+            features = self._temp_flight_layer.getFeatures(request)
+            for feature in features:
+                self._temp_flight_layer.deleteFeature(feature.id())
+        self.endResetModel()
+        self._temp_flight_layer.commitChanges()
+        self._temp_flight_layer.updateExtents()
+
     def start_workers(self):
+        """
+Функция для запуска обработчиков планирования добавленных полетов. Сначала маршруты добавляются в очередь обработки,
+потом создаются обработчики не более чем размер очереди или количество ядер.
+        """
         self._planning_mutex.lock()
         for route_feature in self._data:
             if (not route_feature.get('flight_planned') and route_feature.get('route_feature')
@@ -106,17 +129,16 @@ class FlightPlansTableModel(QAbstractTableModel):
                 self._planning_queue.append(route_feature.get('route_feature'))
         self._planning_mutex.unlock()
         self._thread_count = min(len(self._planning_queue), self._thread_num)
-        logging.debug(f'Thread count: {self._thread_count}')
         while self._thread_count > 0:
-            print('Thread count in while: ', self._thread_count)
-            print('management_ mutex lock')
+            self.logger.debug(f'Thread count in while cycle: {self._thread_count}')
             self._worker_management_mutex.lock()
+            self.logger.debug(f'Worker management mutex locked')
             self._thread_count -= 1
             self._worker_management_mutex.unlock()
-            print('management_ mutex unlock')
-            self._workers[self._thread_num] = FlightPlannerWorker(self._planning_queue,
+            self.logger.debug(f'Worker management mutex unlocked')
+            self._workers[self._thread_count] = FlightPlannerWorker(self._planning_queue,
                                                                   self._result_queue,
-                                                                  self._thread_num,
+                                                                  self._thread_count,
                                                                   self._planning_mutex,
                                                                   self._result_mutex,
                                                                   self.crs,
@@ -125,8 +147,8 @@ class FlightPlansTableModel(QAbstractTableModel):
                                                                   self._takeoff_point_altitude,
                                                                   self._up_deviation,
                                                                   self._down_deviation)
-            self._workers.get(self._thread_num).finished_all.connect(self.worker_finished)
-            self._workers.get(self._thread_num).planned_flight.connect(self.worker_planned_flight)
+            self._workers.get(self._thread_count).finished_all.connect(self.worker_finished)
+            self._workers.get(self._thread_count).planned_flight.connect(self.worker_planned_flight)
         self._worker_management_mutex.lock()
         for worker in self._workers.values():
             worker.start()
@@ -155,11 +177,15 @@ class FlightPlansTableModel(QAbstractTableModel):
             flight_plan = self._result_queue.pop(0)
         self._result_mutex.unlock()
         flight_features = flight_plan.get_flight()
-        index = [feat.get('route_feature').attribute('name')
-                 for feat in self._data].index(flight_plan.get_route_feature().attribute('name'))
+        try: #Эта проверка на случай если строчку удалили из списка до того как воркер закончил работу.
+            index = [feat.get('route_feature').attribute('name')
+                     for feat in self._data].index(flight_plan.get_route_feature().attribute('name'))
+        except ValueError:
+            return
         route_feature = flight_plan.get_route_feature()
         self.beginResetModel()
         self._data[index]['flight_planned'] = True
+        self._data[index]['flight_plan'] = flight_plan
         self._data[index]['point_num'] = len(flight_features)
         self.endResetModel()
         self._data[index]['flight_points'] = flight_features
@@ -180,8 +206,8 @@ class FlightPlansTableModel(QAbstractTableModel):
                                         is_service=flight_feat.attribute('is_service')))
             flight_feature.setGeometry(flight_feat.geometry())
             self._temp_flight_layer.addFeature(flight_feature)
-        self._temp_flight_layer.updateExtents()
         self._temp_flight_layer.commitChanges()
+        self._temp_flight_layer.updateExtents()
 
     def save_layer(self):
         pass

@@ -8,9 +8,10 @@ from PyQt5.QtCore import QThread, pyqtSignal, QVariant
 from tools.FlightPlanningLib.geometry_functions.qgs_get_distance import qgs_get_distance
 from tools.FlightPlanningLib.geometry_functions.generate_linear_by_two_points import generate_linear_by_two_points
 from libs.LinearSplineInterpolation.SplinesArray import SplinesArray
+from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
 
 
-class FlightPlanner(QThread):
+class FlightPlanner:
     # multiline is list of tuples, represents points of multiline,
     # crs is str value, represents coordinate system in 'EPSG:X' format
     init_debug = 0
@@ -39,14 +40,9 @@ class FlightPlanner(QThread):
         :param regular_points_dist:
         :param alt_above_takeoff_point:
         '''
-        # print(f'flight_planner.init: \n'
-        #       f'dem layer: {dem_layer.name()},\n dem_layer_band: {dem_layer_band},\n'
-        #       f'flight alt: {flight_altitude},\n up_deviation: {up_deviation},\n down_deviation: {down_deviation}\n'
-        #       f'takeoff point alt: {takeoff_and_landing_point_altitude}\n')
-        if self.init_debug:
-            print("\n===begin init===")
-            print("input line string: ", line_string)
-        super(QThread).__init__()
+        self.logger = RousettusLoggerHandler.get_handler().logger
+        self.logger.debug(f'FlightPlanner begin init process')
+        self.logger.debug(f'args:\n down_deviation: {down_deviation},\n up_deviation: {up_deviation}')
         self.input_route_feature = line_string
         self.alt_above_takeoff_point = alt_above_takeoff_point
         self.takeoff_and_landing_point_altitude = takeoff_and_landing_point_altitude
@@ -89,7 +85,8 @@ class FlightPlanner(QThread):
         self.flight_feats_fields.append(QgsField('alt_asl', QVariant.Double))
         self.flight_feats_fields.append(QgsField('distance', QVariant.Double))
         self.flight_feats_fields.append(QgsField('route_name', QVariant.String))
-        self.flight_feats_fields.append(QgsField('is_service', QVariant.Int))
+        self.flight_feats_fields.append(QgsField('is_service', QVariant.Bool))
+        self.flight_feats_fields.append(QgsField('is_corner', QVariant.Bool))
         if self.init_debug:
             print("===end init===\n")
 
@@ -299,7 +296,6 @@ class FlightPlanner(QThread):
         while all_prepared_flag == 0:
             all_prepared_flag = 1
             for i, flight_point in enumerate(self.flight_points):
-                # print('execute for cycle')
                 if flight_point['prepared_flag'] == 0:
                     all_prepared_flag = 0
                     self.flight_points[i - 1: i + 1] = self.add_mid_flight_point_alternative(self.flight_points[i - 1],
@@ -476,6 +472,7 @@ class FlightPlanner(QThread):
             feat.setAttribute('distance', flight_point['distance'])
             feat.setAttribute('route_name', self.input_route_feature.attribute('name'))
             feat.setAttribute('is_service', flight_point['is_service_flag'])
+            feat.setAttribute('is_corner', flight_point['is_corner_point_flag'])
             fid_num += 1
             flight_feature_list.append(feat)
         return flight_feature_list

@@ -49,6 +49,18 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
         self.logger_view.setModel(RousettusLoggerHandler.get_handler().get_model())
         self.init_signals()
 
+    def init_gui(self):
+        self.prj_name, self.current_project_path, self.prj_full_path = get_current_project_name()
+        self.label_prj_name.setText(self.prj_name)
+        self.label_prj_name.setToolTip(self.prj_name)
+        width = self.label_prj_name.fontMetrics().boundingRect(self.label_prj_name.text()).width()
+        self.label_prj_name.setFixedWidth(width + 5)
+
+        self.label_prj_path.setText(self.current_project_path)
+        self.label_prj_path.setToolTip(self.current_project_path)
+        if self.logger_view.verticalScrollBar():
+            self.logger_view.scrollToBottom()
+
     def init_signals(self):
         self.tabWidget.tabCloseRequested.connect(lambda index: self.closeTab(index))
         self.actionMake_Profiles.triggered.connect(self.add_profile_generate_tab)
@@ -58,13 +70,16 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
         self.actionSettings.triggered.connect(self.show_settings)
         self.app_settings.app_settings_changed_signal.connect(
             lambda: RousettusLoggerHandler.get_handler().set_log_level())
+        RousettusLoggerHandler.get_handler().get_model().data_added.connect(
+            lambda: self.logger_view.scrollToBottom() if self.logger_view.verticalScrollBar() else None)
 
     def show_about(self):
         about_dialog = AboutHandle(self)
         about_dialog.show()
 
     # Add tabs functions
-    # TODO make general function for adding tab (call signal name = "user" button.clicked.connect(lambda: calluser(name)))
+    # TODO make general function for adding tab
+    #  (call signal name = "user" button.clicked.connect(lambda: calluser(name)))
     def add_tab(self, tab_class, tab_name, section_name):
         pass
 
@@ -72,33 +87,20 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
     def add_route_plan_tab(self):
         tab_name = 'Route Plan'
         section_name = 'route_plan'
-        if self.debug:
-            print(r'self.tab_exist_flags.get("Route Plan", 0) == 0 ', self.tab_exist_flags.get(tab_name, 0) == 0)
         if self.tab_exist_flags.get(tab_name, 0) == 0:
-            if self.debug:
-                print("RousettusMain current config: ", self.rousettus_config)
             route_plan_wiget = RoutePlanHandle(main_window=self, config=self.rousettus_config)
             self.tabWidget.addTab(route_plan_wiget, tab_name)
             self.tab_exist_flags[tab_name] = 1
             self.tabWidget.setCurrentWidget(route_plan_wiget)
         else:
             for i in range(self.tabWidget.count()):
-                if self.debug:
-                    print("self.tabWidget.widget(i).section_name ", i, self.tabWidget.widget(i).section_name,
-                          'section_name ', section_name)
-                    print("self.tabWidget.widget(i).section_name == section_name ",
-                          self.tabWidget.widget(i).section_name == section_name)
                 if self.tabWidget.widget(i).section_name == section_name:
                     self.tabWidget.setCurrentWidget(self.tabWidget.setCurrentIndex(i))
                     break
-            if self.debug:
-                print("self.tabWidget.count() ", self.tabWidget.count())
 
     def add_flight_generate_tab(self):
         tab_name = 'Flight Plan'
         section_name = 'flight_plan'
-        if self.debug:
-            print(r'self.tab_exist_flags.get("Flight Plan", 0) == 0 ', self.tab_exist_flags.get(tab_name, 0) == 0)
         if self.tab_exist_flags.get(tab_name, 0) == 0:
             flight_planning_widget = FlightPlanningHandle(main_window=self).set_config(self.rousettus_config)
             self.tabWidget.addTab(flight_planning_widget, tab_name)
@@ -106,11 +108,6 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
             self.tabWidget.setCurrentWidget(flight_planning_widget)
         else:
             for i in range(self.tabWidget.count()):
-                if self.debug:
-                    print("self.tabWidget.widget(i).section_name ", i, self.tabWidget.widget(i).section_name,
-                          'section_name ', section_name)
-                    print("self.tabWidget.widget(i).section_name == section_name ",
-                          self.tabWidget.widget(i).section_name == section_name)
                 if self.tabWidget.widget(i).section_name == section_name:
                     self.tabWidget.setCurrentWidget(self.tabWidget.setCurrentIndex(i))
                     break
@@ -176,18 +173,10 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
         self.settings_dialog = AppSettingsHandle(self)
         self.settings_dialog.show()
 
-    def init_gui(self):
-        self.prj_name, self.current_project_path, self.prj_full_path = get_current_project_name()
-        self.label_prj_name.setText(self.prj_name)
-        self.label_prj_name.setToolTip(self.prj_name)
-        width = self.label_prj_name.fontMetrics().boundingRect(self.label_prj_name.text()).width()
-        self.label_prj_name.setFixedWidth(width + 5)
 
-        self.label_prj_path.setText(self.current_project_path)
-        self.label_prj_path.setToolTip(self.current_project_path)
 
     def prj_changed(self):
-        self.init_gui()
+        self.   init_gui()
         tab_widget_count = self.tabWidget.count()
         for i in range(tab_widget_count):
             self.tabWidget.widget(i).initGui()

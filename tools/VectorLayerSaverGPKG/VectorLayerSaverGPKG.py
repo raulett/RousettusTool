@@ -1,12 +1,16 @@
 import os.path
+import pathlib
 from typing import List
 
 from qgis.core import QgsProject, QgsLayerTreeGroup, QgsVectorLayer, QgsVectorFileWriter, QgsLayerTreeLayer
 
+from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
+
 
 class VectorLayerSaverGPKG:
     """
-вспомогательный класс для создания и управления векторным слоем для профилей, маршрутов и полетов.
+    Вспомогательный класс для создания и управления векторным слоем для профилей, маршрутов и полетов.
+    A helper class for creating and managing a vector layer for profiles, routes, and flights.
     """
     def __init__(self, main_window, group_path: List[str],
                  relative_filepath: List[str], vector_layer: QgsVectorLayer):
@@ -19,11 +23,12 @@ class VectorLayerSaverGPKG:
         :param filename: String representing the filename of the layer file.
         :param vector_layer: Instance of the QgsVectorLayer class representing the vector layer to be saved.
         """
+        self.logger = RousettusLoggerHandler.get_handler().logger
         self.group_node = None
         self.layer_group_path = group_path
         self.layer = vector_layer
         self.layer_filepath = os.path.join([main_window.current_project_path, relative_filepath])
-        print("VectorLayerSaverGPKG, self.layer_filepath: ", self.layer_filepath)
+        self.logger.debug(f"VectorLayerSaverGPKG, layer_filepath: {self.layer_filepath}")
         self._init_group_tree()
         self._init_vector_layer()
         self._add_layer_to_group()
@@ -35,7 +40,7 @@ class VectorLayerSaverGPKG:
         :return: None
         """
         current_group_node = QgsProject.instance().layerTreeRoot()
-        print("VectorLayerSaverGPKG, self.layer_group_path: ", self.layer_group_path)
+        self.logger(f"VectorLayerSaverGPKG, self.layer_group_path: {self.layer_group_path}")
         for group_name in self.layer_group_path:
             find_node = current_group_node.findGroup(group_name)
             if find_node is not None:

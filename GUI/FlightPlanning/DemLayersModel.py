@@ -26,7 +26,6 @@ class DemLayersModel(QAbstractListModel):
         self._data = []
         for layer in [layer for layer in QgsProject.instance().layerTreeRoot().checkedLayers()
                       if isinstance(layer, QgsRasterLayer)]:
-            print(layer.name())
             if layer.isValid():
                 self._data.append(layer)
         self._data.sort(key=lambda raster_layer: raster_layer.name())
