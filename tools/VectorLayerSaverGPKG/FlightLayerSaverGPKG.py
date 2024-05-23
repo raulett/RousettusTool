@@ -1,17 +1,159 @@
-from PyQt5 import QtWidgets
-from qgis.core import QgsVectorLayer, QgsCoordinateReferenceSystem
+# coding=utf-8
+import os
+import pathlib
+import random
+from pathlib import Path
 
-from tools.VectorLayerSaverGPKG.VectorLayerSaverGPKG import VectorLayerSaverGPKG
-from GUI.FlightPlanning.FlightPlanFeatureFabric import FlightPlanFeatureFabric
+from PyQt5.QtGui import QColor
+from qgis.core import QgsVectorLayer, QgsRendererCategory, QgsProject, QgsLayerTreeLayer, QgsVectorFileWriter, \
+    QgsLayerTreeGroup, \
+    QgsMarkerSymbol, QgsCategorizedSymbolRenderer
+
 from tools import constants
+from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
 
 
-class FlightLayerSaverGPKG(VectorLayerSaverGPKG):
-    def __init__(self, main_window: QtWidgets.QMainWindow, method_name: str, vector_layer_name: str):
-        flights_group_path = constants.get_flight_group_path(method_name)
-        flights_file_path = constants.get_flight_file_path(method_name)
+class FlightLayerSaverGPKG:
+    """
 
-        super(VectorLayerSaverGPKG, self).__init__(main_window, flights_group_path, flights_file_path, None)
-        self.field_list = FlightPlanFeatureFabric.get_fields()
-        layer = QgsVectorLayer(constants.geometry_types['PointZ'], constants.gps_layer_name, "memory")
-        layer.setCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
+    """
+
+    def __init__(self, method_name: str, temp_flights_layer: QgsVectorLayer, main_window):
+        self.layer = temp_flights_layer
+        self.main_window = main_window
+        self.logger = RousettusLoggerHandler.get_handler().logger
+        self.layer_group_path = constants.get_flight_group_path(method_name)
+        self.layer_filepath = Path(QgsProject.instance().absolutePath(),
+                                   constants.get_flight_file_path(method_name))
+
+        self.logger.debug(f"FlightLayerSaverGPKG, layer_filepath: {self.layer_filepath}, layer: {self.layer.name()}")
+        self._init_group_tree()
+        self._init_vector_layer()
+        self._add_layer_to_group()
+
+    def save_layer(self, temp_flights_layer: QgsVectorLayer):
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
+        options.layerName = self.layer.name()
+        _writer = QgsVectorFileWriter.writeAsVectorFormatV3(temp_flights_layer, str(self.layer_filepath),
+                                                            QgsProject.instance().transformContext(), options)
+        if _writer[0] != 0:
+            raise IOError(_writer)
+
+    def _init_group_tree(self):
+        """
+        Initializes the layer group tree by creating the necessary group nodes if they don't already exist.
+
+        :return: None
+        """
+        current_group_node = QgsProject.instance().layerTreeRoot()
+        self.logger.debug(f"VectorLayerSaverGPKG, self.layer_group_path: {self.layer_group_path}")
+        for group_name in self.layer_group_path:
+            find_node = current_group_node.findGroup(group_name)
+            if find_node is not None:
+                current_group_node = find_node
+            else:
+                current_group_node = current_group_node.insertGroup(0, group_name)
+        self.group_node = current_group_node
+
+    def get_group_node(self) -> QgsLayerTreeGroup:
+        """
+        Get the group node.
+
+        :return: The group node of the vector layer saver.
+
+        :rtype: QgsLayerTreeGroup
+        """
+        return self.group_node
+
+    def _init_vector_layer(self):
+        """
+        Initialize a gpkg file with vector layer and return it.
+
+        :return: The initialized vector layer.
+        """
+        self.logger.debug(f"VectorLayerSaverGPKG._init_vector_layer, layer_filepath: "
+                          f"{self.layer_filepath}, layer: {self.layer.name()}")
+        if not os.path.exists(os.path.dirname(self.layer_filepath)):
+            os.makedirs(os.path.dirname(self.layer_filepath))
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        if os.path.exists(self.layer_filepath):
+            gpkg_layer = QgsVectorLayer(str(self.layer_filepath), self.layer.name(), 'ogr')
+            self.logger.debug(f"Vgpkg_layer: {gpkg_layer.dataProvider().dataSourceUri()}")
+            layer_list = QgsProject.instance().mapLayersByName(self.layer.name())
+            self.logger.debug(f"Vgpkg_layer: {layer_list[0].dataProvider().dataSourceUri()}")
+            if layer_list:
+                if gpkg_layer.dataProvider().dataSourceUri() == layer_list[0].dataProvider().dataSourceUri():
+                    self.logger.debug(f"gpkg_layer.dataProvider().dataSourceUri() == layer_list[0].dataProvider("
+                                      f").dataSourceUri()")
+                    self.layer = layer_list[0]
+        else:
+            options.driverName = 'GPKG'
+            options.layerName = self.layer.name()
+            _writer = QgsVectorFileWriter.writeAsVectorFormatV3(self.layer, str(self.layer_filepath),
+                                                                QgsProject.instance().transformContext(), options)
+            if _writer[0] != 0:
+                raise IOError(_writer)
+            gpkg_layer = QgsVectorLayer(str(self.layer_filepath), self.layer.name(), 'ogr')
+            if not gpkg_layer.isValid():
+                raise IOError('layer {} failed to load'.format(self.layer.name()))
+            self.layer = gpkg_layer
+
+    def _add_layer_to_group(self):
+        """
+        Adds a layer to a layer group in the QGIS project.
+
+        :param self: The instance of the VectorLayerSaverGPKG class.
+        :return: None
+        """
+        layer_in_group_flag = False
+        for child in self.group_node.children():
+            if isinstance(child, QgsLayerTreeLayer) and child.name() == self.layer.name():
+                if (child.layer() is None) or (child.layer().id() != self.layer.id()):
+                    map_layer = child.layer()
+                    if map_layer:
+                        QgsProject.instance().removeMapLayer(map_layer)
+                    break
+                if child.layer().dataProvider().dataSourceUri() != self.layer.dataProvider().dataSourceUri():
+                    self.layer = child.layer()
+                    break
+                layer_in_group_flag = True
+                break
+        if not layer_in_group_flag:
+            QgsProject.instance().addMapLayer(self.layer, False)
+            self.group_node.addLayer(self.layer)
+
+    def get_layer(self) -> QgsVectorLayer:
+        return self.layer
+
+    def set_style_to_routes_layer(self):
+        """
+        Служебный метод, чтобы установить стиль для слоя полетов.
+        :param layer:
+        :param plugin_path:
+        :return:
+        """
+        unique_names = self.layer.dataProvider().uniqueValues(self.layer.dataProvider().fieldNameIndex('name'))
+
+        self.logger.debug(f"layername: {self.layer.name()}, layer type {self.layer.dataProvider().dataSourceUri()}")
+        self.logger.debug(f"layer id: {self.layer.id()}")
+        self.layer.setRenderer(
+            QgsCategorizedSymbolRenderer(
+                'name',
+                [
+                    QgsRendererCategory(
+                        name,
+                        QgsMarkerSymbol.createSimple({'color': QColor(
+                            random.randint(50, 255),
+                            random.randint(50, 255),
+                            random.randint(50, 255)),
+                            "size": 2.6, }
+                        ),
+                        str(name)
+                    )
+                    for name in unique_names
+                ]
+            )
+        )
+        self.logger.debug(f"renderer: {self.layer.renderer()}, categories: {self.layer.renderer().categories()}")
+        self.layer.triggerRepaint()

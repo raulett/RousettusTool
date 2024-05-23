@@ -22,7 +22,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
         """Constructor."""
-        super(RousettusMainWindow, self).__init__(parent)
+        super(RousettusMainWindow, self).__init__()
         self.prj_name = None
         self.prj_full_path = None
         self.current_project_path = None
@@ -176,7 +176,7 @@ class RousettusMainWindow(QMainWindow, Ui_MainWindow):
 
 
     def prj_changed(self):
-        self.   init_gui()
+        self.init_gui()
         tab_widget_count = self.tabWidget.count()
         for i in range(tab_widget_count):
             self.tabWidget.widget(i).initGui()

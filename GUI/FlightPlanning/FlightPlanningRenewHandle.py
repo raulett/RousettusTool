@@ -9,23 +9,25 @@ from GUI.FlightPlanning.PreviewFlightWindowHandle import PreviewFlightWindowHand
 from UI.FlightPlanning.FlightPlan_renew_ui import Ui_FlightPlan_renew_form
 from tools.Configurable import Configurable
 from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
-from tools.VectorLayerSaverGPKG.FlightLayerSaverGPKG import FlightLayerSaverGPKG
 from GUI.FlightPlanning.LayerListModel import LayerListModel
 from GUI.FlightPlanning.RouteFeaturesTableModel import RouteFeaturesTableModel
 from GUI.FlightPlanning.FlightPlansTableModel import FlightPlansTableModel
 from GUI.FlightPlanning.DemLayersModel import DemLayersModel
 
 from tools import constants
-
-
+from tools.VectorLayerSaverGPKG.FlightLayerSaverGPKG import FlightLayerSaverGPKG
 
 
 class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
+    flight_layer_saver: FlightLayerSaverGPKG
+
     def __init__(self, main_window=None):
         super().__init__()
+        self.flight_layer_saver = None
+        self.main_window = main_window
         self.preview_window = None
         self.raster_layers_model = None
-        self.flight_table_model = None
+        self.flight_table_model: FlightPlansTableModel or None = None
         self.route_feature_table_model = None
         self.route_layers_model = None
         self.main_window = main_window
@@ -68,7 +70,11 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         self.up_dev_dspbox.valueChanged.connect(
             lambda: self.flight_table_model.set_up_deviation_alt(self.up_dev_dspbox.value()))
         self.previw_btn.clicked.connect(self.preview_button_handler)
-
+        self.save_flight_button.clicked.connect(self.save_button_handler)
+        self.wp_export_btn.clicked.connect(self.export_waypoints_btn_handler)
+        self.to_point_alt_dspbox.valueChanged.connect(
+            lambda: self.flight_table_model.set_takeoff_point_alt(self.to_point_alt_dspbox.value())
+        )
 
     def init_dem_crs_warning(self):
         layer = self.dem_layer_combobox.currentData()
@@ -98,13 +104,19 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
 
     def init_flights_table_model(self):
         if self.route_feature_table_model:
-            self.flight_table_model = FlightPlansTableModel(self.route_feature_table_model.get_layer())
+            self.flight_table_model = FlightPlansTableModel(self.route_feature_table_model.get_layer(),
+                                                            self.method_name_layer.currentText(),
+                                                            self.main_window,
+                                                            )
             self.flights_tableView.setModel(self.flight_table_model)
             self.flight_table_model.set_dem_layer(self.dem_layer_combobox.currentData())
             self.flight_table_model.set_desired_alt(self.f_alt_dspbox.value())
             self.flight_table_model.set_takeoff_point_alt(self.to_point_alt_dspbox.value())
             self.flight_table_model.set_down_deviation_alt(self.down_dev_dspbox.value())
             self.flight_table_model.set_up_deviation_alt(self.up_dev_dspbox.value())
+            self.flight_layer_saver = FlightLayerSaverGPKG(self.method_name_layer.currentText(),
+                                                           self.flight_table_model.get_layer(),
+                                                           self.main_window)
 
     def route_table_selection_handler(self):
         pass
@@ -120,22 +132,23 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
                                              self.flights_tableView.selectedIndexes() if index.column() == 0])
 
     def save_button_handler(self):
-        pass
+        """
+        обработчик для кнопки сохранения изменений на слой.
+        handler for the button to save changes to the layer.
+        """
+        self.save_flight_button.setEnabled(False)
+        self.flight_layer_saver.save_layer(self.flight_table_model.get_layer())
+        self.flight_layer_saver.set_style_to_routes_layer()
+        self.save_flight_button.setEnabled(True)
+        QgsProject.instance().reloadAllLayers()
 
     def select_all_button_handler(self):
         self.logger.debug(self.routes_table_view.selectionMode())
-        self.routes_table_view.setSelectionMode(QTableView.MultiSelection)
-        for i in range(self.route_feature_table_model.rowCount()):
-            self.routes_table_view.selectRow(i)
-        self.routes_table_view.setSelectionMode(QTableView.SingleSelection)
-        self.routes_table_view.setSelectionBehavior(QTableView.SelectRows)
+        self.routes_table_view.selectAll()
 
     def preview_button_handler(self):
         self.preview_window = PreviewFlightWindowHandle(self.flight_table_model)
         self.preview_window.show()
-
-    def unplan_button_handler(self):
-        pass
 
     def get_route_layer_group(self) -> QgsLayerTreeGroup or None:
         root = QgsProject.instance().layerTreeRoot()
@@ -149,6 +162,12 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
             return find_node
         else:
             return QgsProject.instance().layerTreeRoot()
+
+    def export_waypoints_btn_handler(self):
+        self.save_button_handler()
+        # TODO убрать LayerSaver в модель данных.
+        self.flight_table_model.export_waypoints_files(self.flight_layer_saver.get_layer())
+        QgsProject.instance().write()
 
     def closeEvent(self, event):
         self.preview_window = None

@@ -1,23 +1,29 @@
 import multiprocessing
+import os
+from pathlib import Path
 from typing import Any, List
 import re
+import time
 
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant, QMutex
 from PyQt5.QtGui import QIcon
 from qgis.core import QgsFeature, QgsField, QgsVectorLayer, QgsFields, QgsGeometry, QgsRasterLayer, QgsPoint, \
-    QgsFeatureRequest
+    QgsFeatureRequest, QgsProject, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 
 from GUI.FlightPlanning.FlightPlannerWorker import FlightPlannerWorker
 from GUI.FlightPlanning.FlightPlanFeatureFabric import FlightPlanFeatureFabric
+
 from tools.ServiceClasses.RousettusLoggerHandler import RousettusLoggerHandler
-
-
+from tools.VectorLayerSaverGPKG.FlightLayerSaverGPKG import FlightLayerSaverGPKG
+from tools import constants
 
 
 class FlightPlansTableModel(QAbstractTableModel):
 
-    def __init__(self, layer: QgsVectorLayer):
+    def __init__(self, layer: QgsVectorLayer, method_name: str, main_window):
         super().__init__()
+        self.method_name = method_name
+        self.main_window = main_window
         self._thread_count = 0
         self._down_deviation = None
         self._up_deviation = None
@@ -32,6 +38,7 @@ class FlightPlansTableModel(QAbstractTableModel):
             self._temp_flight_layer = QgsVectorLayer("PointZ", self.flights_layer_name, "memory")
             self._temp_flight_layer.setCrs(layer.crs())
             self.crs = layer.crs()
+
         else:
             self.flights_layer_name = None
             self.to_point = None
@@ -52,6 +59,7 @@ class FlightPlansTableModel(QAbstractTableModel):
         self._headers = ['Process', 'Name', 'p_num']
         self._thread_num = multiprocessing.cpu_count() - 2 if multiprocessing.cpu_count() > 2 else 1
         self.logger = RousettusLoggerHandler.get_handler().logger
+        self.layer_saver = FlightLayerSaverGPKG(self.method_name, self._temp_flight_layer, self.main_window)
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._data)
@@ -118,8 +126,8 @@ class FlightPlansTableModel(QAbstractTableModel):
 
     def start_workers(self):
         """
-Функция для запуска обработчиков планирования добавленных полетов. Сначала маршруты добавляются в очередь обработки,
-потом создаются обработчики не более чем размер очереди или количество ядер.
+        Функция для запуска обработчиков планирования добавленных полетов. Сначала маршруты добавляются в очередь обработки,
+        потом создаются обработчики не более чем размер очереди или количество ядер.
         """
         self._planning_mutex.lock()
         for route_feature in self._data:
@@ -137,16 +145,16 @@ class FlightPlansTableModel(QAbstractTableModel):
             self._worker_management_mutex.unlock()
             self.logger.debug(f'Worker management mutex unlocked')
             self._workers[self._thread_count] = FlightPlannerWorker(self._planning_queue,
-                                                                  self._result_queue,
-                                                                  self._thread_count,
-                                                                  self._planning_mutex,
-                                                                  self._result_mutex,
-                                                                  self.crs,
-                                                                  self._dem_layer,
-                                                                  self._desired_alt,
-                                                                  self._takeoff_point_altitude,
-                                                                  self._up_deviation,
-                                                                  self._down_deviation)
+                                                                    self._result_queue,
+                                                                    self._thread_count,
+                                                                    self._planning_mutex,
+                                                                    self._result_mutex,
+                                                                    self.crs,
+                                                                    self._dem_layer,
+                                                                    self._desired_alt,
+                                                                    self._takeoff_point_altitude,
+                                                                    self._up_deviation,
+                                                                    self._down_deviation)
             self._workers.get(self._thread_count).finished_all.connect(self.worker_finished)
             self._workers.get(self._thread_count).planned_flight.connect(self.worker_planned_flight)
         self._worker_management_mutex.lock()
@@ -177,7 +185,7 @@ class FlightPlansTableModel(QAbstractTableModel):
             flight_plan = self._result_queue.pop(0)
         self._result_mutex.unlock()
         flight_features = flight_plan.get_flight()
-        try: #Эта проверка на случай если строчку удалили из списка до того как воркер закончил работу.
+        try:  #Эта проверка на случай если строчку удалили из списка до того как воркер закончил работу.
             index = [feat.get('route_feature').attribute('name')
                      for feat in self._data].index(flight_plan.get_route_feature().attribute('name'))
         except ValueError:
@@ -209,8 +217,65 @@ class FlightPlansTableModel(QAbstractTableModel):
         self._temp_flight_layer.commitChanges()
         self._temp_flight_layer.updateExtents()
 
-    def save_layer(self):
-        pass
+    def _make_waypoints_flight_plan(self, flight_plan_features: List[QgsFeature],
+                                    crs: QgsCoordinateReferenceSystem) -> str:
+        """
+        Формирует строку представляющую файл waypoints для загрузки в MissionPlanner
+        :param flight_plan_layer:
+        :return:
+        """
+        flight_plan_features.sort(key=lambda input_feat: input_feat.attribute('point_num'))
+        coord_transform = QgsCoordinateTransform(crs, QgsCoordinateReferenceSystem(4326), QgsProject.instance())
+        waypoints_file_content = "QGC WPL 110\n"
+        for i, feat in enumerate(flight_plan_features):
+
+            flight_point = coord_transform.transform(feat.geometry().asPoint())
+            alt = feat.attribute('alt')
+            if i == 0:
+                waypoints_file_content += (f"{str(i)}\t1\t0\t16\t0.0\t0.0\t0.0\t0.0"
+                                           f"\t{str(flight_point.y())}"
+                                           f"\t{str(flight_point.x())}"
+                                           f"\t{str(feat.attribute('alt_asl'))}\t1\n")
+            waypoints_file_content += (f"{str(i+1)}\t0\t3\t16\t0.0\t0.0\t0.0\t0.0"
+                                       f"\t{str(flight_point.y())}\t{str(flight_point.x())}\t{str(alt)}\t1\n")
+        # TODO оттестировать постановку первой точки. Нормально ли, что она стоит на высоте?
+        # TODO добавить функционал выставления acc radius для точки. сейчас 0.
+        #  Лучше поставить равным отклонению вниз max_dn_dev
+        # TODO нет изменений скорости при планировании полета. Стоит сделать.
+        flight_point = coord_transform.transform(flight_plan_features[-1].geometry().asPoint())
+        alt = flight_plan_features[-1].attribute('alt')
+        waypoints_file_content += (f"{str(len(flight_plan_features) + 1)}"
+                                   f"\t0\t3\t20\t0.0\t0.0\t0.0\t0.0"
+                                   f"\t{str(flight_point.y())}"
+                                   f"\t{str(flight_point.x())}"
+                                   f"\t{str(alt)}\t1\n")
+        return waypoints_file_content
+
+    def export_waypoints_files(self, flight_layer: QgsVectorLayer):
+        def write_waypoints_file(flight_name: str):
+            filepath = Path(QgsProject.instance().absolutePath(),
+                            constants.get_flight_waypoints_filepath(
+                                self.method_name,
+                                flight_name,
+                                flight_layer.name().split('_')[-1]
+                            )
+                            )
+            filepath.parents[0].mkdir(parents=True, exist_ok=True)
+            self.logger.debug(f"filename: {filepath}, save waypoints filepath: {filepath.parents[0]}")
+            request = QgsFeatureRequest().setFilterExpression(f'"name" = \'{flight_name}\'')
+
+            feats = [f for f in flight_layer.getFeatures(request)]
+            self.logger.debug(f'current flight name {flight_name}, features: {feats}')
+            waypoints_file_content = self._make_waypoints_flight_plan(feats, flight_layer.crs())
+            with open(filepath, 'w') as f:
+                f.write(waypoints_file_content)
+
+        flight_names = flight_layer.dataProvider().uniqueValues(flight_layer.dataProvider().fieldNameIndex('name'))
+        self.logger.debug(f"exporting file names: {flight_names}")
+        curr_time = time.time()
+        for f_name in list(flight_names):
+            write_waypoints_file(f_name)
+        self.logger.debug(f"saving time: {time.time() - curr_time}")
 
     def set_dem_layer(self, layer: QgsRasterLayer):
         self._dem_layer = layer
@@ -226,3 +291,6 @@ class FlightPlansTableModel(QAbstractTableModel):
 
     def set_down_deviation_alt(self, down_dev: float):
         self._down_deviation = down_dev
+
+    def get_layer(self) -> QgsVectorLayer:
+        return self._temp_flight_layer

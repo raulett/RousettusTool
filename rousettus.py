@@ -65,6 +65,7 @@ class RousettusMain:
         self.first_start = True
         self.settings = AppSettings.get_settings()
 
+
     def add_action(
             self,
             icon_path,

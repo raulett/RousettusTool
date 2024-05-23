@@ -133,6 +133,7 @@ class VectorLayerSaverGPKG:
         unique_names = layer.dataProvider().uniqueValues(layer.dataProvider().fieldNameIndex('name'))
         renderer = layer.renderer()
         renderer.deleteAllCategories()
+
         for name in unique_names:
             color = QColor(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
             new_symbol = QgsLineSymbol.createSimple({'type': 'arrow', 'color': color})

@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 from PyQt5.QtGui import QPixmap
 
@@ -39,7 +40,29 @@ def get_flight_group_path(method_name: str) -> list:
     return flights_group_path + [method_name] + ['flight_plans']
 
 
-def get_flight_file_path(method_name: str):
-    return flights_filepath + [method_name] + ['flight_plans.gpkg']
+def get_flight_file_path(method_name: str) -> Path:
+    return Path(*flights_filepath, method_name, 'flight_plans.gpkg')
 
 
+def get_flight_waypoints_filepath(method_name: str, flight_name: str, to_pointname: str) -> Path:
+    """
+    Get filepath to flight plan waypoints file.
+    :param method_name:
+    :param flight_name:
+    :return:
+    """
+    return Path(*flights_filepath,
+                'waypoints',
+                method_name,
+                to_pointname,
+                f'{flight_name}.waypoints',)
+
+
+def get_flight_waypoints_folder(method_name: str) -> Path:
+    """
+    Get filepath to flight plan waypoints file.
+    :param method_name:
+    :param flight_name:
+    :return:
+    """
+    return Path(*flights_filepath, 'waypoints', method_name)
