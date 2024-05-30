@@ -46,6 +46,7 @@ class FlightPlannerWorker(QThread):
             else:
                 self.mutex.unlock()
                 break
+            flight_planner = None
             try:
                 flight_planner = FlightPlanner(route_feature, self.layer_crs,
                                                self.dem_layer, 1,
@@ -54,13 +55,14 @@ class FlightPlannerWorker(QThread):
             except Exception as e:
                 self.logger.warning(f'Worker {self.worker_num} have exception in FlightPlanner init: '
                                     f'{e.with_traceback()}')
-                raise e
+                # raise e
             self.logger.debug(f'Worker {self.worker_num} created FLIGHT PLANNER instance')
             try:
                 flight_planner.general_algorithm()
             except Exception as e:
-                self.logger.debug(f'Worker {self.worker_num} have exception in FlightPlanner.general_algorithm')
-                raise e
+                self.logger.warning(f'Worker {self.worker_num} have exception in FlightPlanner.general_algorithm')
+                flight_planner = None
+                # raise e
             self.logger.debug(f'Worker {self.worker_num} processed general algorithm')
             self.result_mutex.lock()
             self.result_queue.append(flight_planner)

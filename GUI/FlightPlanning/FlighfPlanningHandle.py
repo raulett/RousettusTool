@@ -71,7 +71,6 @@ class FlightPlanningHandle(Ui_FlightPlan_form, QDialog, Configurable):
     def show_flight_graph(self):
 
         dist_alt_table = self.flight_planner.get_altitude_points_list()
-        print('flight_metrics: ', self.flight_planner.get_flight_metrics())
         flight_plan = self.flight_planner.get_flight_points()
         fig, ax = plt.subplots()
         ax.xaxis.set_major_locator(mpl.ticker.MultipleLocator(500))

@@ -48,8 +48,8 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         self.flights_tableView.setSelectionBehavior(QTableView.SelectRows)
         self.raster_layers_model = DemLayersModel()
         self.dem_layer_combobox.setModel(self.raster_layers_model)
-        self.init_dem_crs_warning()
         self.init_flights_table_model()
+        self.init_dem_crs_warning()
 
     def init_signals(self):
         self.routes_only_checkBox.stateChanged.connect(self.init_gui)
@@ -93,6 +93,11 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
             else:
                 self.dem_crs_warn_label.setPixmap(QPixmap())
                 self.dem_crs_warn_label.setToolTip('')
+            if not layer.extent().contains(self.route_feature_table_model.get_layer().extent()):
+                self.dem_crs_warn_label.setPixmap(QPixmap(":/plugins/RousettusTool/resources/warning.png"))
+                self.dem_crs_warn_label.setToolTip('Maybe route and dem layers don`t have intersecting extent')
+                return
+
 
     def init_route_layer_list_model(self):
         self.route_layers_model.set_layer_group(self.get_route_layer_group())
@@ -101,9 +106,11 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         if self.route_feature_table_model:
             self.route_feature_table_model.set_layer(self.route_layer_combobox.currentData())
             self.init_flights_table_model()
+            self.init_dem_crs_warning()
 
     def init_flights_table_model(self):
         if self.route_feature_table_model:
+            self.logger.debug(f"Route layer: {self.route_feature_table_model.get_layer().name()}")
             self.flight_table_model = FlightPlansTableModel(self.route_feature_table_model.get_layer(),
                                                             self.method_name_layer.currentText(),
                                                             self.main_window,
@@ -136,11 +143,8 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
         обработчик для кнопки сохранения изменений на слой.
         handler for the button to save changes to the layer.
         """
-        self.save_flight_button.setEnabled(False)
-        self.flight_layer_saver.save_layer(self.flight_table_model.get_layer())
-        self.flight_layer_saver.set_style_to_routes_layer()
-        self.save_flight_button.setEnabled(True)
-        QgsProject.instance().reloadAllLayers()
+        self.flight_table_model.save_flight_layer()
+        QgsProject.instance().write()
 
     def select_all_button_handler(self):
         self.logger.debug(self.routes_table_view.selectionMode())

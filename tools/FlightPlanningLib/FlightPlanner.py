@@ -95,8 +95,8 @@ class FlightPlanner:
             print("\n===begin general_algorithm_debug===")
         self.make_dist_to_x_func().make_dist_to_y_func()
         self.init_altitude_points(self.dem_layer, self.dem_layer_band)
-        if self.general_algorithm_debug:
-            print("dist alt function: ")
+        if len(self.alt_points) < 2:
+            raise ValueError("Altitude points count with dem altitude less than 2")
         self.make_dist_to_ground_alt_function()
         self.make_initial_flight_plan()
         self.make_flight_plan()

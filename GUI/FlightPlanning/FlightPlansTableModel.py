@@ -22,6 +22,7 @@ class FlightPlansTableModel(QAbstractTableModel):
 
     def __init__(self, layer: QgsVectorLayer, method_name: str, main_window):
         super().__init__()
+        self.logger = RousettusLoggerHandler.get_handler().logger
         self.method_name = method_name
         self.main_window = main_window
         self._thread_count = 0
@@ -32,9 +33,11 @@ class FlightPlansTableModel(QAbstractTableModel):
         self._dem_layer = None
         self._dem_band = None
         self._planning_mutex = None
+        self.logger.debug(f"Flights table model, route layer: {layer}")
         if layer is not None:
             self.flights_layer_name = layer.name().replace('routes', 'flights')
             self.to_point = re.search(r'^routes_iteration-\d*_(.*)$', layer.name()).group(0)
+            self.logger.debug(f"takeoff point name: {self.to_point}")
             self._temp_flight_layer = QgsVectorLayer("PointZ", self.flights_layer_name, "memory")
             self._temp_flight_layer.setCrs(layer.crs())
             self.crs = layer.crs()
@@ -58,7 +61,6 @@ class FlightPlansTableModel(QAbstractTableModel):
         self._layer_add_mutex = QMutex()
         self._headers = ['Process', 'Name', 'p_num']
         self._thread_num = multiprocessing.cpu_count() - 2 if multiprocessing.cpu_count() > 2 else 1
-        self.logger = RousettusLoggerHandler.get_handler().logger
         self.layer_saver = FlightLayerSaverGPKG(self.method_name, self._temp_flight_layer, self.main_window)
 
     def rowCount(self, parent=QModelIndex()):
@@ -184,7 +186,10 @@ class FlightPlansTableModel(QAbstractTableModel):
         if len(self._result_queue) > 0:
             flight_plan = self._result_queue.pop(0)
         self._result_mutex.unlock()
-        flight_features = flight_plan.get_flight()
+        if flight_plan is not None:
+            flight_features = flight_plan.get_flight()
+        else:
+            return
         try:  #Эта проверка на случай если строчку удалили из списка до того как воркер закончил работу.
             index = [feat.get('route_feature').attribute('name')
                      for feat in self._data].index(flight_plan.get_route_feature().attribute('name'))
@@ -276,6 +281,12 @@ class FlightPlansTableModel(QAbstractTableModel):
         for f_name in list(flight_names):
             write_waypoints_file(f_name)
         self.logger.debug(f"saving time: {time.time() - curr_time}")
+
+    def save_flight_layer(self):
+        self.logger.debug(f"saving flight layer: {self._temp_flight_layer.name()}, "
+                          f"{self._temp_flight_layer.featureCount()} features")
+        self.layer_saver.renew_features(self._temp_flight_layer)
+        self.layer_saver.set_style_to_flights_layer()
 
     def set_dem_layer(self, layer: QgsRasterLayer):
         self._dem_layer = layer
