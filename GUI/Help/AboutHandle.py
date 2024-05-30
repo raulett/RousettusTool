@@ -14,8 +14,8 @@ class AboutHandle(Ui_DialogAbout, QDialog):
         self.initGui()
 
     def initGui(self):
-        current_path = os.path.dirname(os.path.abspath(__file__)).split('\\')
-        root_path = '\\'.join(current_path[0: len(current_path) - 2]) + "\\"
+        current_path = os.path.dirname(os.path.abspath(__file__)).split(os.sep)
+        root_path = os.sep.join(current_path[0: len(current_path) - 2])
         metadata_file = open(os.path.join(root_path, 'metadata.txt'), 'r')
         lines = metadata_file.readlines()
         metadata_file.close()
