@@ -286,7 +286,7 @@
    </widget>
    <widget class="QMenu" name="menuFligft_Planning">
     <property name="title">
-     <string>Fligft Planning</string>
+     <string>Flight Planning</string>
     </property>
     <addaction name="actionMake_Profiles"/>
     <addaction name="actionPlan_routes"/>

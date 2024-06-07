@@ -256,7 +256,8 @@ class FlightPlansTableModel(QAbstractTableModel):
                                    f"\t{str(alt)}\t1\n")
         return waypoints_file_content
 
-    def export_waypoints_files(self, flight_layer: QgsVectorLayer):
+    def export_waypoints_files(self):
+        flight_layer = self._temp_flight_layer
         def write_waypoints_file(flight_name: str):
             filepath = Path(QgsProject.instance().absolutePath(),
                             constants.get_flight_waypoints_filepath(

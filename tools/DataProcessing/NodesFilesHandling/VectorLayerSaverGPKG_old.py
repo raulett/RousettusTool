@@ -83,7 +83,7 @@ class VectorLayerSaverGPKG:
         return self.layer_filepath
 
     def get_flight_profiles_filepath(self, method_name):
-        self.layer_filepath = os.sep.join(['flights', method_name, f'{method_name}_survey_profiles.gpkg'])
+        self.layer_filepath = os.sep.join(['flights', method_name, 'survey_profiles.gpkg'])
         return self.layer_filepath
 
     def get_flight_routes_filepath(self, method_name: str):

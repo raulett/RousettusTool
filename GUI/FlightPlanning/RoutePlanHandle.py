@@ -1,16 +1,16 @@
+import os
 import re
 from typing import List
-import os
 
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog, QMessageBox
-from PyQt5.QtCore import QSize, Qt, QRegExp, QVariant
-from PyQt5.QtGui import QValidator, QRegExpValidator, QPixmap
 from qgis.core import QgsMapLayerProxyModel, QgsVectorLayer, QgsCoordinateReferenceSystem, \
-    QgsProject, QgsWkbTypes, QgsFields, QgsField, QgsFeature
+    QgsProject, QgsFeature
 
-from tools.Configurable import Configurable
-from UI.FlightPlanning.RoutePlan_ui import Ui_RoutePlan_form
 from GUI.InterfaceCustumClasses.SurveyMethodCombobox import SurveyMethodCombobox
+from UI.FlightPlanning.RoutePlan_ui import Ui_RoutePlan_form
+from tools.Configurable import Configurable
 from tools.DataProcessing.NodesFilesHandling.VectorLayerSaverGPKG_old import VectorLayerSaverGPKG
 from tools.FlightPlanningLib.RoutePlanner import RoutePlanner
 
@@ -44,28 +44,17 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
         self.survey_method_combobox.setObjectName("choose_surv_method_comboBox")
         self.method_name_horizontalLayout.insertWidget(1, self.survey_method_combobox)
 
-        self.lineEdit_lon.setValidator(QRegExpValidator(QRegExp("[+-]?[0-9]\\d{1,2}\\.\\d{,6}")))
-        self.lineEdit_lat.setValidator(QRegExpValidator(QRegExp("[+-]?[0-9]\\d{1,2}\\.\\d{,6}")))
-        self.lineEdit_alt.setValidator((QRegExpValidator(QRegExp("[+-]?[0-9]\\d*\\.\\d{,2}"))))
-
         self.takeoff_point_layer_ComboBox.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.profiles_mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.LineLayer)
         self.update_takeoff_points_features_combobox()
-        # self.takeoff_point_ComboBox.setLayer(self.takeoff_point_layer_ComboBox.currentLayer())
-        # print('current layer', self.takeoff_point_layer_ComboBox.currentLayer())
 
-        # connect signals
-        # self.takeoff_point_layer_ComboBox.layerChanged.connect(
-        #     lambda: self.takeoff_point_ComboBox.setLayer(self.takeoff_point_layer_ComboBox.currentLayer()))
         self.takeoff_point_layer_ComboBox.layerChanged.connect(self.update_takeoff_points_features_combobox)
         self.pushButton_generate_routes.clicked.connect(self.generate_button_handler)
 
-        # load config
-        if self.debug:
-            print("config is None: ", self.config is None)
         self.load_config()
 
     def update_takeoff_points_features_combobox(self):
+        field_name = "name"
         self.takeoff_point_ComboBox.setLayer(self.takeoff_point_layer_ComboBox.currentLayer())
         print('current layer', self.takeoff_point_layer_ComboBox.currentLayer())
         if ((self.takeoff_point_layer_ComboBox.currentLayer() is None) or
@@ -76,6 +65,9 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
         else:
             self.TO_feature_Label.setPixmap(QPixmap())
             self.TO_feature_Label.setToolTip('')
+        if (self.takeoff_point_layer_ComboBox.currentLayer() is not None and
+                field_name in [field.name() for field in self.takeoff_point_layer_ComboBox.currentLayer().fields()]):
+            self.takeoff_point_ComboBox.setDisplayExpression(field_name)
 
     def generate_button_handler(self):
 
@@ -178,14 +170,6 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
                 if 'method_title' in self.config[self.section_name]:
                     self.survey_method_combobox.setCurrentIndex(
                         self.config[self.section_name].getint('method_title'))
-                if 'takeoff_point_LON' in self.config[self.section_name]:
-                    self.lineEdit_lon.setText(self.config[self.section_name].get('takeoff_point_LON'))
-                if 'takeoff_point_LAT' in self.config[self.section_name]:
-                    self.lineEdit_lat.setText(self.config[self.section_name].get('takeoff_point_LAT'))
-                if 'takeoff_point_ALT' in self.config[self.section_name]:
-                    self.lineEdit_alt.setText(self.config[self.section_name].get('takeoff_point_ALT'))
-                if 'takeoff_point_name' in self.config[self.section_name]:
-                    self.lineEdit.setText(self.config[self.section_name].get('takeoff_point_name'))
                 if 'distance_limit' in self.config[self.section_name]:
                     self.survey_dist_spinBox.setValue(self.config[self.section_name].getint('distance_limit'))
                 if 'serveice_route_limit' in self.config[self.section_name]:
@@ -209,24 +193,12 @@ class RoutePlanHandle(Ui_RoutePlan_form, QDialog, Configurable):
             if self.section_name not in self.config:
                 self.config[self.section_name] = {}
             self.config[self.section_name]['method_title'] = str(self.survey_method_combobox.currentIndex())
-            self.config[self.section_name]['takeoff_point_LON'] = str(self.lineEdit_lon.text())
-            self.config[self.section_name]['takeoff_point_LAT'] = str(self.lineEdit_lat.text())
-            self.config[self.section_name]['takeoff_point_ALT'] = str(self.lineEdit_alt.text())
-            self.config[self.section_name]['takeoff_point_name'] = str(self.lineEdit.text())
-            if self.debug:
-                print("self.config[self.section_name]['takeoff_point_name']: ",
-                      self.config[self.section_name]['takeoff_point_name'])
-                print("str(self.lineEdit.text()) ",
-                      str(self.lineEdit.text()))
             self.config[self.section_name]['distance_limit'] = str(self.survey_dist_spinBox.value())
             self.config[self.section_name]['service_route_limit'] = str(self.service_dist_spinBox.value())
             self.config[self.section_name]['initial_profiles_layer'] = str(None if
                                                                            self.profiles_mMapLayerComboBox.currentLayer() is None else
                                                                            self.profiles_mMapLayerComboBox.currentLayer().name() if
                                                                            self.profiles_mMapLayerComboBox.currentLayer().isValid() else None)
-            # self.config[self.section_name]['takeoff_points_layer'] = str(
-            #     self.takeoff_point_layer_ComboBox.currentLayer().name() if
-            #     self.takeoff_point_layer_ComboBox.currentLayer().isValid() else None)
             self.config[self.section_name]['takeoff_point_id'] = str(
                 self.takeoff_point_ComboBox.feature().id() if
                 self.takeoff_point_ComboBox.feature().isValid() else None)

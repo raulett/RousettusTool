@@ -199,7 +199,7 @@ class Ui_MainWindow(object):
         self.menuMagnetic_Data.setTitle(_translate("MainWindow", "Magnetic Data"))
         self.menu_2.setTitle(_translate("MainWindow", "File"))
         self.settings_menu.setTitle(_translate("MainWindow", "Settings"))
-        self.menuFligft_Planning.setTitle(_translate("MainWindow", "Fligft Planning"))
+        self.menuFligft_Planning.setTitle(_translate("MainWindow", "Flight Planning"))
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
         self.exitButton.setText(_translate("MainWindow", "Выйти"))
         self.DBsettingsButton.setText(_translate("MainWindow", "Database settings"))

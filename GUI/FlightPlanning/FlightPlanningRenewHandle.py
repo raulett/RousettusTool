@@ -169,8 +169,7 @@ class FlightPlanningHandle(Ui_FlightPlan_renew_form, QDialog, Configurable):
 
     def export_waypoints_btn_handler(self):
         self.save_button_handler()
-        # TODO убрать LayerSaver в модель данных.
-        self.flight_table_model.export_waypoints_files(self.flight_layer_saver.get_layer())
+        self.flight_table_model.export_waypoints_files()
         QgsProject.instance().write()
 
     def closeEvent(self, event):

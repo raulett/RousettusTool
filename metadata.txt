@@ -6,7 +6,7 @@
 name=Rousettus
 qgisMinimumVersion=3.19
 description=process geophysical data, collected with SibGis UAV platform
-version=0.2.20240530 build 1
+version=0.2.20240607 build 1
 author=Vladimir Morozov
 email=raulett@gmail.com
 
